@@ -16,41 +16,63 @@ class Injector {
 
   resolve(token) {
     return this._providers.get(token)
-      || (this._parent && this._parent.resolve(token));
+      || this._parent.resolve(token);
   }
 
-  require(token, fromToken = null) {
-    if (this._cache.has(token)) {
-      return this._cache.get(token)
-    }
-    // todo: reuse parent instances
-    // if (!this._providers.has(token)) {
-    //   if (this._parent) {
-    //     return this._parent.require(token);
-    //   }
-    // }
-
+  deps(token, fromToken = null) {
     if (token === fromToken) {
       throw 'cyclic dependency';
     }
 
-    let provider = this.resolve(token);
+    if (this._providers.has(token)) {
+      const deps = [];
+      this._providers.get(token)[1].forEach(dep=> {
+        deps.push(dep);
+        deps.push.apply(deps, this.deps(dep, fromToken || token));
+      });
+      return deps;
+    } else {
+      if (this._parent) {
+        return this._parent.deps(token, fromToken);
+      } else {
+        throw 'provider not found';
+      }
+    }
+  }
 
-    if (provider) {
-      let [factory, deps] = provider;
+  _shouldInstantiate(token) {
+    const deps = new Set(this.deps(token));
+
+    if (this._providers.has(token)) {
+      return true;
+    }
+
+    // if some of dependencies is overridden by local provider
+    const keys = [...this._providers.keys()];
+    const keysFromDeps = keys.filter(token=>deps.has(token));
+    return keysFromDeps.length > 0 || (deps.size === 0 && !this._parent);
+  }
+
+  get(token) {
+    if (this._cache.has(token)) {
+      return this._cache.get(token)
+    }
+
+    if (this._shouldInstantiate(token)) {
+      let [factory, deps] = this.resolve(token);
       let args = [];
       for (let i = 0, l = deps.length; i < l; i++) {
-        args.push(this.require(deps[i], fromToken || token));
+        args.push(this.get(deps[i]));
       }
       let instance = factory(...args);
       this._cache.set(token, instance);
       return instance;
     } else {
-      throw 'provider not found';
+      return this._parent.get(token);
     }
   }
 
-  branch() {
+  createChild() {
     return new Injector(this);
   }
 }
