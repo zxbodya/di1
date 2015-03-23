@@ -3,7 +3,7 @@
 const defaultProviders = new Map();
 
 class Injector {
-  constructor(injector, providers = new Map(), cache = new Map()) {
+  constructor(injector, providers = new Map(defaultProviders), cache = new Map()) {
     this._providers = providers;
     this._cache = cache;
     this._parent = injector;
@@ -16,8 +16,7 @@ class Injector {
 
   resolve(token) {
     return this._providers.get(token)
-      || (this._parent && this._parent.resolve(token))
-      || defaultProviders.get(token);
+      || (this._parent && this._parent.resolve(token));
   }
 
   require(token, fromToken = null) {
@@ -28,11 +27,11 @@ class Injector {
     // if (!this._providers.has(token)) {
     //   if (this._parent) {
     //     return this._parent.require(token);
-    //  }
+    //   }
     // }
 
     if (token === fromToken) {
-      throw ['Cyclic dependency, token', token];
+      throw 'cyclic dependency';
     }
 
     let provider = this.resolve(token);
@@ -41,13 +40,13 @@ class Injector {
       let [factory, deps] = provider;
       let args = [];
       for (let i = 0, l = deps.length; i < l; i++) {
-        args.push(this.require(deps[i], token));
+        args.push(this.require(deps[i], fromToken || token));
       }
       let instance = factory(...args);
       this._cache.set(token, instance);
       return instance;
     } else {
-      throw ['Provider not found, token:', JSON.stringify(token)];
+      throw 'provider not found';
     }
   }
 
