@@ -95,4 +95,9 @@ describe('DI Container', function () {
     expect(cnt).toEqual(2);
   });
 
+  it('allows to add new default providers after Injector was created', ()=> {
+    di.provide(12, ()=>12);
+    expect(injector.get(12)).toEqual(12);
+  });
+
 });

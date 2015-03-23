@@ -3,7 +3,7 @@
 const defaultProviders = new Map();
 
 class Injector {
-  constructor(injector, providers = new Map(defaultProviders), cache = new Map()) {
+  constructor(injector, providers = new Map(), cache = new Map()) {
     this._providers = providers;
     this._cache = cache;
     this._parent = injector;
@@ -16,7 +16,8 @@ class Injector {
 
   resolve(token) {
     return this._providers.get(token)
-      || this._parent.resolve(token);
+      || (this._parent && this._parent.resolve(token))
+      || defaultProviders.get(token);
   }
 
   deps(token, fromToken = null) {
@@ -24,26 +25,34 @@ class Injector {
       throw 'cyclic dependency';
     }
 
+    let firstDeps;
+    const deps = [];
     if (this._providers.has(token)) {
-      const deps = [];
-      this._providers.get(token)[1].forEach(dep=> {
+      firstDeps = this._providers.get(token)[1];
+    } else {
+      if (!this._parent && defaultProviders.has(token)) {
+        firstDeps = defaultProviders.get(token)[1];
+      }
+    }
+    if (firstDeps) {
+      firstDeps.forEach(dep=> {
         deps.push(dep);
         deps.push.apply(deps, this.deps(dep, fromToken || token));
       });
       return deps;
+    }
+
+    if (this._parent) {
+      return this._parent.deps(token, fromToken);
     } else {
-      if (this._parent) {
-        return this._parent.deps(token, fromToken);
-      } else {
-        throw 'provider not found';
-      }
+      throw 'provider not found';
     }
   }
 
   _shouldInstantiate(token) {
     const deps = new Set(this.deps(token));
 
-    if (this._providers.has(token)) {
+    if (this._providers.has(token) || (!this._parent && defaultProviders.has(token))) {
       return true;
     }
 
