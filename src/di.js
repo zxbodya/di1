@@ -56,10 +56,14 @@ class Injector {
       return true;
     }
 
-    // if some of dependencies is overridden by local provider
-    const keys = [...this._providers.keys()];
-    const keysFromDeps = keys.filter(token=>deps.has(token));
-    return keysFromDeps.length > 0 || (deps.size === 0 && !this._parent);
+    return (
+      // first injector and no dependencies
+    (deps.size === 0 && !this._parent)
+      // Instance of current inector is required
+    || deps.has(Injector)
+      // some of dependencies is overridden
+    || [...this._providers.keys()].filter(token=>deps.has(token)).length > 0
+    )
   }
 
   get(token) {
@@ -90,7 +94,7 @@ class Injector {
   }
 }
 
-defaultProviders.set(Injector, [()=> null,[]]);
+defaultProviders.set(Injector, [()=> null, []]);
 
 module.exports = {
   provide(token, factory, ...deps) {

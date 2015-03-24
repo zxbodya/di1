@@ -108,4 +108,10 @@ describe('DI Container', function () {
     expect(child.get('injectorId')).toEqual(child);
   });
 
+  it('should use "latest" injector when instantiating with injector dependency', ()=> {
+    injector.provide('injectorId', id=>id, di.Injector);
+    let child = injector.createChild();
+    expect(child.get('injectorId')).toEqual(child);
+  });
+
 });
