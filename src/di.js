@@ -86,12 +86,9 @@ class Injector {
   }
 }
 
-
-var di = {
+module.exports = {
   provide(token, factory, ...deps) {
     defaultProviders.set(token, [factory, deps])
   },
   Injector
 };
-
-module.exports = di;
