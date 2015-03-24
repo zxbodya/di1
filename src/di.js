@@ -63,6 +63,10 @@ class Injector {
   }
 
   get(token) {
+    if (token === Injector) {
+      return this;
+    }
+
     if (this._cache.has(token)) {
       return this._cache.get(token)
     }
@@ -85,6 +89,8 @@ class Injector {
     return new Injector(this);
   }
 }
+
+defaultProviders.set(Injector, [()=> null,[]]);
 
 module.exports = {
   provide(token, factory, ...deps) {

@@ -100,4 +100,12 @@ describe('DI Container', function () {
     expect(injector.get(12)).toEqual(12);
   });
 
+  it('should return itself when Injector instance is required', ()=> {
+    expect(injector.get(di.Injector)).toEqual(injector);
+    let child = injector.createChild();
+    expect(child.get(di.Injector)).toEqual(child);
+    child.provide('injectorId', id=>id, di.Injector);
+    expect(child.get('injectorId')).toEqual(child);
+  });
+
 });
