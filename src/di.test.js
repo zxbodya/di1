@@ -32,7 +32,7 @@ describe('DI Container', function () {
 
   it('caches instance after creation', ()=> {
     injector.provide(1, ()=> {
-      return {}
+      return {};
     });
 
     expect(injector.get(1)).toEqual(injector.get(1));
@@ -48,7 +48,7 @@ describe('DI Container', function () {
   });
 
 
-  it('overrides provides from parent injector with provides from childs', ()=> {
+  it('overrides provides from parent injector with provides from child', ()=> {
     injector.provide(1, ()=>1);
 
     let child = injector.createChild();
@@ -70,7 +70,7 @@ describe('DI Container', function () {
 
     injector.provide(1, ()=> {
       cnt += 1;
-      return {}
+      return {};
     });
 
     let child = injector.createChild();
@@ -85,7 +85,7 @@ describe('DI Container', function () {
     injector.provide(3, ()=>3);
     injector.provide(1, ()=> {
       cnt += 1;
-      return {}
+      return {};
     }, 3);
 
     let child = injector.createChild();
