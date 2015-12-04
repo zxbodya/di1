@@ -4,7 +4,7 @@ di.provide(10, ()=>10);
 di.provide(11, (ten)=>ten + 1, 10);
 di.provide(21, (ten, eleven)=>ten + eleven, 10, 11);
 
-describe('DI Container', function () {
+describe('DI Container', ()=> {
   let injector;
 
   beforeEach(()=> {
@@ -40,7 +40,7 @@ describe('DI Container', function () {
   it('uses provide from parent injector', ()=> {
     injector.provide(1, ()=>1);
 
-    let child = injector.createChild();
+    const child = injector.createChild();
     child.provide(2, (one)=>one + 1, 1);
 
     expect(child.get(2)).toEqual(2);
@@ -50,7 +50,7 @@ describe('DI Container', function () {
   it('overrides provides from parent injector with provides from child', ()=> {
     injector.provide(1, ()=>1);
 
-    let child = injector.createChild();
+    const child = injector.createChild();
     child.provide(1, ()=>2);
     child.provide(3, (one)=>one + 1, 1);
 
@@ -72,7 +72,7 @@ describe('DI Container', function () {
       return {};
     });
 
-    let child = injector.createChild();
+    const child = injector.createChild();
     injector.get(1);
     child.get(1);
 
@@ -87,7 +87,7 @@ describe('DI Container', function () {
       return {};
     }, 3);
 
-    let child = injector.createChild();
+    const child = injector.createChild();
     injector.get(1);
     child.provide(3, ()=>4);
     child.get(1);
@@ -101,7 +101,7 @@ describe('DI Container', function () {
 
   it('should return itself when Injector instance is required', ()=> {
     expect(injector.get(di.Injector)).toEqual(injector);
-    let child = injector.createChild();
+    const child = injector.createChild();
     expect(child.get(di.Injector)).toEqual(child);
     child.provide('injectorId', id=>id, di.Injector);
     expect(child.get('injectorId')).toEqual(child);
@@ -109,8 +109,7 @@ describe('DI Container', function () {
 
   it('should use "latest" injector when instantiating with injector dependency', ()=> {
     injector.provide('injectorId', id=>id, di.Injector);
-    let child = injector.createChild();
+    const child = injector.createChild();
     expect(child.get('injectorId')).toEqual(child);
   });
-
 });

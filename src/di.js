@@ -10,7 +10,7 @@ class Injector {
    * @param {Map} providers Map instance containing providers declaration to be used by injector
    * @param {Map} cache Map instance used to cache created instances
    */
-  constructor(injector, providers = new Map(), cache = new Map()) {
+  constructor(injector = null, providers = new Map(), cache = new Map()) {
     this.providers = providers;
     this.cache = cache;
     this.parent = injector;
@@ -62,7 +62,7 @@ class Injector {
     if (directDeps) {
       const result = [];
       for (let i = 0, l = directDeps.length; i < l; i++) {
-        let dep = directDeps[i];
+        const dep = directDeps[i];
         result.push(dep);
         result.push.apply(result, this.deps(dep, fromToken || token));
       }
@@ -71,9 +71,8 @@ class Injector {
 
     if (this.parent) {
       return this.parent.deps(token, fromToken);
-    } else {
-      throw new Error('provider not found');
     }
+    throw new Error('provider not found');
   }
 
   /**
@@ -114,17 +113,16 @@ class Injector {
     }
 
     if (this.shouldInstantiate(token)) {
-      let [factory, deps] = this.resolve(token);
-      let args = [];
+      const [factory, deps] = this.resolve(token);
+      const args = [];
       for (let i = 0, l = deps.length; i < l; i++) {
         args.push(this.get(deps[i]));
       }
-      let instance = factory(...args);
+      const instance = factory(...args);
       this.cache.set(token, instance);
       return instance;
-    } else {
-      return this.parent.get(token);
     }
+    return this.parent.get(token);
   }
 
   /**
@@ -164,5 +162,5 @@ function annotate(factory, ...deps) {
 export default {
   annotate,
   provide,
-  Injector
+  Injector,
 };
