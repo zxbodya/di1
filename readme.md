@@ -48,6 +48,17 @@ Create injector for specific context, reusing existing services from existing in
 
 `let childInjector = injector.createChild()`
 
+Pass injector instance to factory:
+
+```js
+di.annotate(
+  (injector)=>{
+    // ...
+  }, 
+  di.Injector
+);
+```
+
 ## More about child injector
 
 Ability to create child injector is intended for for providing context specific implementations while reusing not secific where it is possible.
@@ -63,7 +74,6 @@ So if we will create child injector for user request and will provide user speci
 
 1. `products` service would be created once and will be reused across all requests
 2. but `cart` and `user profile` services will be created for each user individually
- 
-For deeper understanding - see [di.test.js](https://github.com/zxbodya/di1/blob/master/src/di.test.js)
+
 
 
