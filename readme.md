@@ -1,4 +1,4 @@
-## di1 Dependency Injection Container
+## di1 Dependency Injection Container [![Build Status](https://travis-ci.org/zxbodya/di1.svg)](https://travis-ci.org/zxbodya/di1)
 
 DI Container, inspired by [Angular2 DI](https://github.com/angular/di.js) but a lot simplified.
 
