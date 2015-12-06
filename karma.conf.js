@@ -84,6 +84,7 @@ export default function(config) {
     },
 
     plugins: [
+      require('karma-firefox-launcher'),
       require('karma-chrome-launcher'),
       require('karma-jasmine'),
       require('karma-sourcemap-loader'),
