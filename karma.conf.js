@@ -46,8 +46,15 @@ export default function(config) {
     //   dir: 'coverage/',
     // },
     coverageReporter: {
-      type: 'lcov', // lcov or lcovonly are required for generating lcov.info files
-      dir: 'coverage/',
+      reporters: [
+        {
+          type: 'text-summary',
+        },
+        {
+          type: 'lcov',
+          dir: 'coverage/',
+        },
+      ],
     },
 
     // web server port

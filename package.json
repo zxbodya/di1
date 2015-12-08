@@ -22,7 +22,7 @@
   "jsnext:main": "src/di.js",
   "scripts": {
     "lint": "eslint ./src/",
-    "test": "babel-node -- ./node_modules/karma-cli/bin/karma start",
+    "test": "rimraf coverage && babel-node -- ./node_modules/karma-cli/bin/karma start",
     "coveralls": "cat ./coverage/*/lcov.info | ./node_modules/.bin/coveralls",
     "build": "rimraf lib && babel --optional runtime src --out-dir lib",
     "prepublish": "npm run build"
