@@ -1,4 +1,7 @@
-## di1 Dependency Injection Container [![Build Status](https://travis-ci.org/zxbodya/di1.svg)](https://travis-ci.org/zxbodya/di1)
+## di1 Dependency Injection Container 
+
+[![Build Status](https://travis-ci.org/zxbodya/di1.svg)](https://travis-ci.org/zxbodya/di1)
+[![Coverage Status](https://coveralls.io/repos/zxbodya/di1/badge.svg?branch=master&service=github)](https://coveralls.io/github/zxbodya/di1?branch=master)
 
 DI Container, inspired by [Angular2 DI](https://github.com/angular/di.js) but a lot simplified.
 
