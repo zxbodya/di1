@@ -112,4 +112,12 @@ describe('DI Container', ()=> {
     const child = injector.createChild();
     expect(child.get('injectorId')).toEqual(child);
   });
+
+  it('annotate function works', ()=> {
+    const fn12 = ()=>12;
+    const fn10Plus = (arg)=>10 + arg;
+    di.annotate(fn12, 12);
+    di.annotate(fn10Plus, 12);
+    expect(injector.get(fn10Plus)).toEqual(22);
+  });
 });

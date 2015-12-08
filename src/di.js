@@ -134,7 +134,8 @@ class Injector {
   }
 }
 
-defaultProviders.set(Injector, [()=> null, []]);
+defaultProviders.set(Injector, [()=> {
+}, []]);
 
 /**
  * Register default provider, will return passed token
