@@ -20,13 +20,14 @@ describe('DI Container', ()=> {
   });
 
   it('throws for non existing token', ()=> {
-    expect(()=>injector.get(1)).toThrow(new Error('provider not found'));
+    expect(()=>injector.get(1)).toThrow(new Error('Provider for "1" not found'));
+    expect(()=>injector.get(123)).toThrow(new Error('Provider for "123" not found'));
   });
 
   it('throws for cyclic dependencies', ()=> {
     injector.provide(1, ()=>1, 2);
     injector.provide(2, ()=>2, 1);
-    expect(()=>injector.get(1)).toThrow(new Error('cyclic dependency'));
+    expect(()=>injector.get(1)).toThrow(new Error('Cyclic dependency: "1" depends on itself'));
   });
 
   it('caches instance after creation', ()=> {
@@ -121,3 +122,4 @@ describe('DI Container', ()=> {
     expect(injector.get(fn10Plus)).toEqual(22);
   });
 });
+

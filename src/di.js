@@ -1,3 +1,5 @@
+import tokenName from './tokenName';
+
 const defaultProviders = new Map();
 
 /**
@@ -47,7 +49,7 @@ class Injector {
    */
   deps(token, fromToken) {
     if (token === fromToken) {
-      throw new Error('cyclic dependency');
+      throw new Error(`Cyclic dependency: "${tokenName(token)}" depends on itself`);
     }
 
     let directDeps;
@@ -72,7 +74,7 @@ class Injector {
     if (this.parent) {
       return this.parent.deps(token, fromToken);
     }
-    throw new Error('provider not found');
+    throw new Error(`Provider for "${tokenName(token)}" not found`);
   }
 
   /**
