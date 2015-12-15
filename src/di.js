@@ -114,9 +114,9 @@ class Injector {
 
     if (this.shouldInstantiate(token)) {
       const [factory, deps] = this.resolve(token);
-      const args = [];
+      const args = new Array(deps.length);
       for (let i = 0, l = deps.length; i < l; i++) {
-        args.push(this.get(deps[i]));
+        args[i] = this.get(deps[i]);
       }
       const instance = factory(...args);
       this.cache.set(token, instance);

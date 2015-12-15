@@ -38,10 +38,10 @@
     "eslint": "^1.9.0",
     "eslint-config-airbnb": "^1.0.0",
     "eslint-plugin-react": "^3.8.0",
-    "istanbul": "0.3.22",
-    "jasmine": "2.4.1",
-    "jasmine-core": "2.4.1",
-    "remap-istanbul": "0.3.1",
+    "istanbul": "^0.4.1",
+    "jasmine": "^2.4.1",
+    "jasmine-core": "^2.4.1",
+    "remap-istanbul": "^0.5.1",
     "rimraf": "^2.4.4"
   },
   "dependencies": {
