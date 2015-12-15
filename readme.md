@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/zxbodya/di1.svg)](https://travis-ci.org/zxbodya/di1)
 [![Coverage Status](https://coveralls.io/repos/zxbodya/di1/badge.svg?branch=master&service=github)](https://coveralls.io/github/zxbodya/di1?branch=master)
+[![codecov.io](https://codecov.io/github/zxbodya/di1/coverage.svg?branch=master)](https://codecov.io/github/zxbodya/di1?branch=master)
 
 DI Container, inspired by [Angular2 DI](https://github.com/angular/di.js) but a lot simplified.
 
