@@ -45,9 +45,10 @@ class Injector {
    * Find all dependencies for specified token, can contain duplicates
    * @param {*} token
    * @param {*} fromToken
+   * @param {Injector} startInjector
    * @returns {Array}
    */
-  deps(token, fromToken) {
+  deps(token, fromToken, startInjector = this) {
     if (token === fromToken) {
       throw new Error(`Cyclic dependency: "${tokenName(token)}" depends on itself`);
     }
@@ -66,13 +67,13 @@ class Injector {
       for (let i = 0, l = directDeps.length; i < l; i++) {
         const dep = directDeps[i];
         result.push(dep);
-        result.push.apply(result, this.deps(dep, fromToken || token));
+        result.push.apply(result, startInjector.deps(dep, fromToken || token));
       }
       return result;
     }
 
     if (this.parent) {
-      return this.parent.deps(token, fromToken);
+      return this.parent.deps(token, fromToken, startInjector);
     }
     throw new Error(`Provider for "${tokenName(token)}" not found`);
   }

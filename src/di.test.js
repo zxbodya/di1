@@ -121,5 +121,16 @@ describe('DI Container', ()=> {
     di.annotate(fn10Plus, 12);
     expect(injector.get(fn10Plus)).toEqual(22);
   });
-});
 
+  it('allows to define provider only in child injector', ()=> {
+    di.provide('a', b=>'a1=' + b, 'b');
+    di.provide('b', ()=>'b1');
+
+    const ri = new di.Injector();
+    ri.provide('b', c=>'b2=' + c, 'c');
+
+    const ci = ri.createChild();
+    ci.provide('c', ()=>'c2');
+    expect(ci.get('a')).toEqual('a1=b2=c2');
+  });
+});

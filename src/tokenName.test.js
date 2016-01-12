@@ -33,4 +33,3 @@ describe('Token name utility', ()=> {
     expect(tokenName(123)).toBe('123');
   });
 });
-
