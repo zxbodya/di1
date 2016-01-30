@@ -11,6 +11,13 @@ describe('Token name utility', ()=> {
   it('returns "unnamed:function..." name when it is anonymous function', ()=> {
     expect(tokenName(function() {
     })).toMatch(/^unnamed:function/);
+
+    expect(tokenName(
+        function() {
+          // comments to get length>40
+          // comments to get length>40
+        }
+      ).length <= 48).toBeTruthy();
   });
 
   it('returns "unnamed:[object Array]" when array is used', ()=> {
