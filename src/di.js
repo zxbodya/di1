@@ -6,7 +6,7 @@ const defaultProviders = new Map();
  * Injector class
  * @class
  */
-class Injector {
+export class Injector {
   /**
    * @param {Injector} injector Parent injector
    * @param {Map} providers Map instance containing providers declaration to be used by injector
@@ -146,7 +146,7 @@ defaultProviders.set(Injector, [null, []]);
  * @param {*} deps
  * @returns {*}
  */
-function provide(token, factory, ...deps) {
+export function provide(token, factory, ...deps) {
   defaultProviders.set(token, [factory, deps]);
   return token;
 }
@@ -158,7 +158,7 @@ function provide(token, factory, ...deps) {
  * @param {*} deps
  * @returns {function}
  */
-function annotate(factory, ...deps) {
+export function annotate(factory, ...deps) {
   return provide(factory, factory, ...deps);
 }
 

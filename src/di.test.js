@@ -1,14 +1,14 @@
-import di from './di.js';
+import {annotate, provide, Injector} from './di.js';
 
-di.provide(10, ()=>10);
-di.provide(11, (ten)=>ten + 1, 10);
-di.provide(21, (ten, eleven)=>ten + eleven, 10, 11);
+provide(10, ()=>10);
+provide(11, (ten)=>ten + 1, 10);
+provide(21, (ten, eleven)=>ten + eleven, 10, 11);
 
 describe('DI Container', ()=> {
   let injector;
 
   beforeEach(()=> {
-    injector = new di.Injector();
+    injector = new Injector();
   });
 
   it('resolves simple dependencies', ()=> {
@@ -96,20 +96,20 @@ describe('DI Container', ()=> {
   });
 
   it('allows to add new default providers after Injector was created', ()=> {
-    di.provide(12, ()=>12);
+    provide(12, ()=>12);
     expect(injector.get(12)).toEqual(12);
   });
 
   it('should return itself when Injector instance is required', ()=> {
-    expect(injector.get(di.Injector)).toEqual(injector);
+    expect(injector.get(Injector)).toEqual(injector);
     const child = injector.createChild();
-    expect(child.get(di.Injector)).toEqual(child);
-    child.provide('injectorId', id=>id, di.Injector);
+    expect(child.get(Injector)).toEqual(child);
+    child.provide('injectorId', id=>id, Injector);
     expect(child.get('injectorId')).toEqual(child);
   });
 
   it('should use "latest" injector when instantiating with injector dependency', ()=> {
-    injector.provide('injectorId', id=>id, di.Injector);
+    injector.provide('injectorId', id=>id, Injector);
     const child = injector.createChild();
     expect(child.get('injectorId')).toEqual(child);
   });
@@ -117,16 +117,16 @@ describe('DI Container', ()=> {
   it('annotate function works', ()=> {
     const fn12 = ()=>12;
     const fn10Plus = (arg)=>10 + arg;
-    di.annotate(fn12, 12);
-    di.annotate(fn10Plus, 12);
+    annotate(fn12, 12);
+    annotate(fn10Plus, 12);
     expect(injector.get(fn10Plus)).toEqual(22);
   });
 
   it('allows to define provider only in child injector', ()=> {
-    di.provide('a', b=>'a1=' + b, 'b');
-    di.provide('b', ()=>'b1');
+    provide('a', b=>'a1=' + b, 'b');
+    provide('b', ()=>'b1');
 
-    const ri = new di.Injector();
+    const ri = new Injector();
     ri.provide('b', c=>'b2=' + c, 'c');
 
     const ci = ri.createChild();
