@@ -15,7 +15,7 @@ export default function tokenName(token) {
     return `unnamed:${truncate(text, 40)}`;
   }
   if (Array.isArray(token)) {
-    return `unnamed:[object Array]`;
+    return 'unnamed:[object Array]';
   }
   if (typeof token === 'object') {
     return `unnamed:${token.toString()}`;

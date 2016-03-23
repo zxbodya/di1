@@ -94,10 +94,10 @@ export class Injector {
     return (
       // first injector and no dependencies
       (deps.size === 0 && !this.parent)
-        // Instance of current inector is required
+      // Instance of current inector is required
       || deps.has(Injector)
-        // some of dependencies is overridden
-      || [...this.providers.keys()].filter(t=>deps.has(t)).length > 0
+      // some of dependencies is overridden
+      || [...this.providers.keys()].filter(t => deps.has(t)).length > 0
     );
   }
 
