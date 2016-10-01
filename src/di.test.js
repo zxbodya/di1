@@ -1,4 +1,4 @@
-import { annotate, provide, Injector } from './di.js';
+import { annotate, provide, Injector } from './di';
 
 provide(10, () => 10);
 provide(11, (ten) => ten + 1, 10);

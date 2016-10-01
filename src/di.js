@@ -56,18 +56,16 @@ export class Injector {
     let directDeps;
     if (this.providers.has(token)) {
       directDeps = this.providers.get(token)[1];
-    } else {
-      if (!this.parent && defaultProviders.has(token)) {
-        directDeps = defaultProviders.get(token)[1];
-      }
+    } else if (!this.parent && defaultProviders.has(token)) {
+      directDeps = defaultProviders.get(token)[1];
     }
 
     if (directDeps) {
       const result = [];
-      for (let i = 0, l = directDeps.length; i < l; i++) {
+      for (let i = 0, l = directDeps.length; i < l; i += 1) {
         const dep = directDeps[i];
         result.push(dep);
-        result.push.apply(result, startInjector.deps(dep, fromToken || token));
+        result.push(...startInjector.deps(dep, fromToken || token));
       }
       return result;
     }
@@ -96,7 +94,7 @@ export class Injector {
       (deps.size === 0 && !this.parent)
       // Instance of current inector is required
       || deps.has(Injector)
-      // some of dependencies is overridden
+      // some of dependencies are overridden
       || [...this.providers.keys()].filter(t => deps.has(t)).length > 0
     );
   }
@@ -118,7 +116,7 @@ export class Injector {
     if (this.shouldInstantiate(token)) {
       const [factory, deps] = this.resolve(token);
       const args = new Array(deps.length);
-      for (let i = 0, l = deps.length; i < l; i++) {
+      for (let i = 0, l = deps.length; i < l; i += 1) {
         args[i] = this.get(deps[i]);
       }
       const instance = factory(...args);

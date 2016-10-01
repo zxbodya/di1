@@ -1,4 +1,4 @@
-import tokenName from './tokenName.js';
+import tokenName from './tokenName';
 
 describe('Token name utility', () => {
   it('returns function name when available', () => {
@@ -9,7 +9,7 @@ describe('Token name utility', () => {
   });
 
   it('returns "unnamed:function..." name when it is anonymous function', () => {
-    expect(tokenName(function () {
+    expect(tokenName(() => {
     })).toMatch(/^unnamed:function/);
 
     expect(tokenName(

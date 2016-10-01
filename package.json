@@ -2,7 +2,7 @@
   "name": "di1",
   "version": "0.1.5",
   "author": "Bogdan Savluk <savluk.bogdan@gmail.com>",
-  "description": "Simple but yet functional, DI container for JavaScript",
+  "description": "Simple but yet powerful, DI container for JavaScript",
   "keywords": [
     "DI",
     "dependency injection",
@@ -22,8 +22,8 @@
   "jsnext:main": "src/di.js",
   "scripts": {
     "lint": "eslint ./src/",
-    "cover": "rimraf coverage && istanbul cover -x \"*.test.js\" ./node_modules/jasmine/bin/jasmine.js && npm run cover_remapping",
-    "cover_remapping": "remap-istanbul -i coverage/coverage.json -o coverage/coverage-remapped.json && remap-istanbul -i coverage/coverage.json -o coverage/coverage-remapped.lcov -t lcovonly && remap-istanbul -i coverage/coverage.json -o coverage/coverage-remapped -t html",
+    "cover": "rimraf coverage && istanbul cover -x \"**/*.test.js\" ./node_modules/jasmine/bin/jasmine.js && npm run cover_remapping",
+    "cover_remapping": "istanbul-sourcemap-report ./coverage/coverage.json --json.file=./coverage/coverage-remapped.json --html.dir=./coverage/coverage-remapped",
     "test": "jasmine",
     "coveralls": "cat ./coverage/*/coverage-remapped.lcov | ./node_modules/.bin/coveralls",
     "build": "rimraf lib && babel --presets es2015 --plugins transform-runtime src --out-dir lib --source-maps",
@@ -36,13 +36,13 @@
     "babel-preset-es2015": "^6.3.13",
     "codecov.io": "^0.1.6",
     "coveralls": "^2.11.4",
-    "eslint": "^2.2.0",
-    "eslint-config-airbnb": "^6.0.2",
-    "eslint-plugin-react": "^4.1.0",
+    "eslint": "^3.7.0",
+    "eslint-config-airbnb-base": "^8.0.0",
+    "eslint-plugin-import": "^1.7.0",
     "istanbul": "^0.4.1",
+    "istanbul-sourcemap-report": "^0.1.0",
     "jasmine": "^2.4.1",
     "jasmine-core": "^2.4.1",
-    "remap-istanbul": "^0.5.1",
     "rimraf": "^2.4.4"
   },
   "dependencies": {
