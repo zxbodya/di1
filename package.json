@@ -24,7 +24,6 @@
     "lint": "eslint ./src/",
     "cover": "jest --coverage",
     "test": "jest",
-    "coveralls": "cat ./coverage/*/coverage-remapped.lcov | ./node_modules/.bin/coveralls",
     "build": "rimraf lib && babel src --out-dir lib --source-maps",
     "prepublish": "npm run build"
   },
