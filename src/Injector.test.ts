@@ -1,14 +1,13 @@
-import { annotate, provide, Injector } from './index';
-
-provide(10, () => 10);
-provide(11, ten => ten + 1, 10);
-provide(21, (ten, eleven) => ten + eleven, 10, 11);
+import { Injector } from './Injector';
 
 describe('DI Container', () => {
   let injector: Injector;
 
   beforeEach(() => {
     injector = new Injector();
+    injector.provide(10, () => 10);
+    injector.provide(11, ten => ten + 1, 10);
+    injector.provide(21, (ten, eleven) => ten + eleven, 10, 11);
   });
 
   it('resolves simple dependencies', () => {
@@ -102,7 +101,7 @@ describe('DI Container', () => {
   });
 
   it('allows to add new default providers after Injector was created', () => {
-    provide(12, () => 12);
+    injector.provide(12, () => 12);
     expect(injector.get(12)).toEqual(12);
   });
 
@@ -122,17 +121,16 @@ describe('DI Container', () => {
 
   it('annotate function works', () => {
     const fn12 = () => 12;
-    const fn10Plus = (arg: any) => 10 + arg;
-    annotate(fn12, 12);
-    annotate(fn10Plus, 12);
+    const fn10Plus = (arg: number) => 10 + arg;
+    injector.provide(fn12, fn12);
+    injector.provide(fn10Plus, fn10Plus, fn12);
     expect(injector.get(fn10Plus)).toEqual(22);
   });
 
   it('allows to define provider only in child injector', () => {
-    provide('a', b => `a1=${b}`, 'b');
-    provide('b', () => 'b1');
-
     const ri = new Injector();
+
+    ri.provide('a', b => `a1=${b}`, 'b');
     ri.provide('b', c => `b2=${c}`, 'c');
 
     const ci = ri.createChild();

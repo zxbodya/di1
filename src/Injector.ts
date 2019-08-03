@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-non-null-assertion */
 import tokenName from './tokenName';
 
-export const defaultProviders = new Map();
+type Token<T = any> = any;
+type Factory<T = any> = (...args: any) => T;
 
-export type Token<T = any> = any;
-export type Factory<T = any> = (...args: any) => T;
 type Provider<T = any> = [Factory<T>, Token[]];
 
 /**
@@ -13,21 +12,17 @@ type Provider<T = any> = [Factory<T>, Token[]];
  */
 export class Injector {
   private readonly parent?: Injector;
-  private providers: Map<any, Provider>;
-  private cache: Map<any, any>;
+  private providers = new Map<any, Provider>();
+  private cache = new Map<any, any>();
   /**
    * @param {Injector} injector Parent injector
-   * @param {Map} providers Map instance containing providers declaration to be used by injector
-   * @param {Map} cache Map instance used to cache created instances
    */
-  constructor(injector?: Injector, providers = new Map(), cache = new Map()) {
-    this.providers = providers;
-    this.cache = cache;
+  constructor(injector?: Injector) {
     this.parent = injector;
   }
 
   /**
-   * Declare new provider, shadow or replace existing
+   * Register provider, can replace existing override one from parent injector
    * @param {*} token Token to be used as provider id
    * @param {function} factory Factory function used to create instance
    * @param {*} deps Tokens identifying services to be injected into factory
@@ -48,10 +43,9 @@ export class Injector {
    * @returns {Injector|function}
    */
   private resolve<T>(token: Token<T>): Provider<T> {
+    if (token === Injector) return [() => (this as unknown) as T, []];
     return (
-      this.providers.get(token) ||
-      (this.parent && this.parent.resolve(token)) ||
-      defaultProviders.get(token)
+      this.providers.get(token)! || (this.parent && this.parent.resolve(token))
     );
   }
 
@@ -67,6 +61,7 @@ export class Injector {
     fromToken?: Token,
     startInjector: Injector = this
   ): Token[] {
+    if (token === Injector) return [];
     if (token === fromToken) {
       throw new Error(
         `Cyclic dependency: "${tokenName(token)}" depends on itself`
@@ -76,8 +71,6 @@ export class Injector {
     let directDeps;
     if (this.providers.has(token)) {
       directDeps = this.providers.get(token)![1];
-    } else if (!this.parent && defaultProviders.has(token)) {
-      directDeps = defaultProviders.get(token)[1];
     }
 
     if (directDeps) {
@@ -105,17 +98,14 @@ export class Injector {
   private shouldInstantiate(token: Token) {
     const deps = new Set(this.deps(token));
 
-    if (
-      this.providers.has(token) ||
-      (!this.parent && defaultProviders.has(token))
-    ) {
+    if (this.providers.has(token) || !this.parent || token === Injector) {
       return true;
     }
 
     return (
       // first injector and no dependencies
       (deps.size === 0 && !this.parent) ||
-      // Instance of current inector is required
+      // Instance of current injector is required
       deps.has(Injector) ||
       // some of dependencies are overridden
       [...this.providers.keys()].filter(t => deps.has(t)).length > 0
@@ -157,5 +147,3 @@ export class Injector {
     return new Injector(this);
   }
 }
-
-defaultProviders.set(Injector, [null, []]);
