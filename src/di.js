@@ -19,7 +19,7 @@ export class Injector {
   }
 
   /**
-   * Declare new provider, shadow or replce existing
+   * Declare new provider, shadow or replace existing
    * @param {*} token Token to be used as provider id
    * @param {function} factory Factory function used to create instance
    * @param {*} deps Tokens identifying services to be injected into factory
@@ -36,9 +36,11 @@ export class Injector {
    * @returns {Injector|function}
    */
   resolve(token) {
-    return this.providers.get(token)
-      || (this.parent && this.parent.resolve(token))
-      || defaultProviders.get(token);
+    return (
+      this.providers.get(token) ||
+      (this.parent && this.parent.resolve(token)) ||
+      defaultProviders.get(token)
+    );
   }
 
   /**
@@ -50,7 +52,9 @@ export class Injector {
    */
   deps(token, fromToken, startInjector = this) {
     if (token === fromToken) {
-      throw new Error(`Cyclic dependency: "${tokenName(token)}" depends on itself`);
+      throw new Error(
+        `Cyclic dependency: "${tokenName(token)}" depends on itself`
+      );
     }
 
     let directDeps;
@@ -77,7 +81,7 @@ export class Injector {
   }
 
   /**
-   * Check does service instance should be instantiated using this Injector(istead of parent one)
+   * Check does service instance should be instantiated using this Injector(instead of parent one)
    * @private
    * @param {*} token
    * @returns {*}
@@ -85,17 +89,20 @@ export class Injector {
   shouldInstantiate(token) {
     const deps = new Set(this.deps(token));
 
-    if (this.providers.has(token) || (!this.parent && defaultProviders.has(token))) {
+    if (
+      this.providers.has(token) ||
+      (!this.parent && defaultProviders.has(token))
+    ) {
       return true;
     }
 
     return (
       // first injector and no dependencies
-      (deps.size === 0 && !this.parent)
+      (deps.size === 0 && !this.parent) ||
       // Instance of current inector is required
-      || deps.has(Injector)
+      deps.has(Injector) ||
       // some of dependencies are overridden
-      || [...this.providers.keys()].filter(t => deps.has(t)).length > 0
+      [...this.providers.keys()].filter(t => deps.has(t)).length > 0
     );
   }
 
@@ -127,7 +134,7 @@ export class Injector {
   }
 
   /**
-   * Create child injectot using this as parent
+   * Create child injector using this as parent
    * @returns {Injector}
    */
   createChild() {

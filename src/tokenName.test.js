@@ -2,22 +2,20 @@ import tokenName from './tokenName';
 
 describe('Token name utility', () => {
   it('returns function name when available', () => {
-    function abc() {
-    }
+    function abc() {}
 
     expect(tokenName(abc)).toBe('abc');
   });
 
   it('returns "unnamed:function..." name when it is anonymous function', () => {
-    expect(tokenName(() => {
-    })).toMatch(/^unnamed:function/);
+    expect(tokenName(() => {})).toMatch(/^unnamed:/);
 
-    expect(tokenName(
-        () => {
-          // comments to get length>40
-          // comments to get length>40
-        }
-      ).length <= 48).toBeTruthy();
+    expect(
+      tokenName(() => {
+        // comments to get length>40
+        // comments to get length>40
+      }).length <= 48
+    ).toBeTruthy();
   });
 
   it('returns "unnamed:[object Array]" when array is used', () => {
@@ -26,10 +24,10 @@ describe('Token name utility', () => {
 
   it('returns "unnamed:[object Constructor]" when object is used', () => {
     expect(tokenName({})).toBe('unnamed:[object Object]');
-    function Abc() {
-    }
 
-    expect(tokenName(new Abc())).toMatch(/^unnamed:\[object \w+\]$/);
+    function Abc() {}
+
+    expect(tokenName(new Abc())).toMatch(/^unnamed:\[object \w+]$/);
   });
 
   it('returns string if it is used as a token', () => {

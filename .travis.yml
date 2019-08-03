@@ -1,8 +1,7 @@
 language: node_js
 sudo: false
 node_js:
-  - 6
-  - 4
+  - '10'
 
 cache:
   directories:
@@ -15,5 +14,4 @@ script:
   - npm run lint && npm run cover
 
 after_success:
-  - cat ./coverage/lcov.info  | ./node_modules/coveralls/bin/coveralls.js
-  - cat ./coverage/coverage-final.json | ./node_modules/codecov.io/bin/codecov.io.js
+  - ./node_modules/.bin/codecov

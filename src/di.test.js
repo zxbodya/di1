@@ -1,7 +1,7 @@
 import { annotate, provide, Injector } from './di';
 
 provide(10, () => 10);
-provide(11, (ten) => ten + 1, 10);
+provide(11, ten => ten + 1, 10);
 provide(21, (ten, eleven) => ten + eleven, 10, 11);
 
 describe('DI Container', () => {
@@ -20,14 +20,20 @@ describe('DI Container', () => {
   });
 
   it('throws for non existing token', () => {
-    expect(() => injector.get(1)).toThrow(new Error('Provider for "1" not found'));
-    expect(() => injector.get(123)).toThrow(new Error('Provider for "123" not found'));
+    expect(() => injector.get(1)).toThrow(
+      new Error('Provider for "1" not found')
+    );
+    expect(() => injector.get(123)).toThrow(
+      new Error('Provider for "123" not found')
+    );
   });
 
   it('throws for cyclic dependencies', () => {
     injector.provide(1, () => 1, 2);
     injector.provide(2, () => 2, 1);
-    expect(() => injector.get(1)).toThrow(new Error('Cyclic dependency: "1" depends on itself'));
+    expect(() => injector.get(1)).toThrow(
+      new Error('Cyclic dependency: "1" depends on itself')
+    );
   });
 
   it('caches instance after creation', () => {
@@ -40,22 +46,20 @@ describe('DI Container', () => {
     injector.provide(1, () => 1);
 
     const child = injector.createChild();
-    child.provide(2, (one) => one + 1, 1);
+    child.provide(2, one => one + 1, 1);
 
     expect(child.get(2)).toEqual(2);
   });
-
 
   it('overrides provides from parent injector with provides from child', () => {
     injector.provide(1, () => 1);
 
     const child = injector.createChild();
     child.provide(1, () => 2);
-    child.provide(3, (one) => one + 1, 1);
+    child.provide(3, one => one + 1, 1);
 
     expect(child.get(3)).toEqual(3);
   });
-
 
   it('uses default provides', () => {
     expect(injector.get(10)).toBe(10);
@@ -81,10 +85,14 @@ describe('DI Container', () => {
   it('do not reuse instances from parent injector, if one of dependencies is overridden', () => {
     let cnt = 0;
     injector.provide(3, () => 3);
-    injector.provide(1, () => {
-      cnt += 1;
-      return {};
-    }, 3);
+    injector.provide(
+      1,
+      () => {
+        cnt += 1;
+        return {};
+      },
+      3
+    );
 
     const child = injector.createChild();
     injector.get(1);
@@ -114,7 +122,7 @@ describe('DI Container', () => {
 
   it('annotate function works', () => {
     const fn12 = () => 12;
-    const fn10Plus = (arg) => 10 + arg;
+    const fn10Plus = arg => 10 + arg;
     annotate(fn12, 12);
     annotate(fn10Plus, 12);
     expect(injector.get(fn10Plus)).toEqual(22);

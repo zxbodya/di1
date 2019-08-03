@@ -1,10 +1,9 @@
 ## di1 Dependency Injection Container 
 
 [![Build Status](https://travis-ci.org/zxbodya/di1.svg)](https://travis-ci.org/zxbodya/di1)
-[![Coverage Status](https://coveralls.io/repos/zxbodya/di1/badge.svg?branch=master&service=github)](https://coveralls.io/github/zxbodya/di1?branch=master)
 [![codecov.io](https://codecov.io/github/zxbodya/di1/coverage.svg?branch=master)](https://codecov.io/github/zxbodya/di1?branch=master)
 
-DI Container, inspired by [Angular2 DI](https://github.com/angular/di.js) but a lot simplified.
+Inspired by [Angular2 DI](https://github.com/angular/di.js) but a lot simplified.
 
 Key features are:
 
@@ -13,11 +12,13 @@ Key features are:
 * ability to create separate Injector instance for specific context (user session for example)
 * ability to inject Injector instance - useful when dealing with circular dependencies 
 
-## Documetation
+## Documentation
 
 Create service definition in default services map:
 
-`provide(token, factory, ...deps)`
+```js
+provide(token, factory, ...deps)
+```
 
 where:
 
@@ -29,28 +30,34 @@ it will return token.
 
 There is also short cut for case when you want to use factory as a token:
 
-`annotate(factory, ...deps)`
+```js
+annotate(factory, ...deps)
+```
 
 Injector constructor:
 
-`let rootInjector = new Injector(injector = null, providers = new Map(), cache = new Map())`
-
-- `injector` - injector to be used when service is not found
-- `providers` - map with service providers
-- `cache` - map with service instances
+```js
+let rootInjector = new Injector()
+```
 
 
 Create a service via injector:
 
-`let svc = injector.get(svcToken)`
+```js
+let svc = injector.get(svcToken)
+```
 
 Replace service provider(should be called before service creation):
 
-`injector.provide(svcToken, newFactory)`
+```js
+injector.provide(svcToken, newFactory)
+```
 
 Create injector for specific context, reusing existing services from existing injector 
 
-`let childInjector = injector.createChild()`
+```js
+let childInjector = injector.createChild()
+```
 
 Pass injector instance to factory:
 
@@ -65,19 +72,16 @@ di.annotate(
 
 ## More about child injector
 
-Ability to create child injector is intended for for providing context specific implementations while reusing not secific where it is possible.
+Ability to create child injector is intended for for providing context specific implementations while reusing not specific when possible.
 
 For example, imagine simple shopping app, and following services server side:
 
-- products - provides access to products db 
-- session - session storage for current user
-- user profile (depends on: session)
-- cart (depends on: user, products)
+- `products` - provides access to products db 
+- `session` - session storage for current user
+- `user` (depends on: `session`)
+- `cart` (depends on: `user`, `products`)
 
 So if we will create child injector for user request and will provide user specific session service implementation, than:
 
 1. `products` service would be created once and will be reused across all requests
-2. but `cart` and `user profile` services will be created for each user individually
-
-
-
+2. but `cart` and `user` services will be created for each user separately
