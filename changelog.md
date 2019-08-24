@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0 (TBD)
+**Breaking changes**
+
+Complete api redesign, focusing on type safety. 
+
 ## 0.3.0 (2019-08-24)
 - migrate to typescript
 - drop old nodejs versions support (below 8)
