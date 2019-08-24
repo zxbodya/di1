@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0 (2019-08-24)
+- migrate to typescript
+- drop old nodejs versions support (below 8)
+
 ## 0.2.0 (2019-08-24)
 - migrate to babel 7
 

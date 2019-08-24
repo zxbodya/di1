@@ -1,4 +1,4 @@
-import { annotate, provide, Injector } from './Injector';
+import { annotate, provide, Injector } from './index';
 
 provide(10, () => 10);
 provide(11, ten => ten + 1, 10);

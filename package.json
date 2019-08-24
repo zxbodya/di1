@@ -16,7 +16,7 @@
   },
   "license": "MIT",
   "engines": {
-    "node": ">=10.13.0"
+    "node": ">=8"
   },
   "main": "lib/di.cjs.js",
   "module": "lib/di.esm.js",
