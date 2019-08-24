@@ -1,48 +1,49 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-non-null-assertion */
 import tokenName from './tokenName';
+import { createToken } from './Token';
+import { Declaration, Injectable } from './Declaration';
 
-type Token<T = any> = any;
-type Factory<T = any> = (...args: any) => T;
-type Provider<T = any> = [Factory<T>, Token[]];
+export const InjectorToken = createToken<Injector>('Injector');
+
+interface InjectorInterface {
+  register<T>(service: Declaration<T>): void;
+  register<T>(token: Injectable<T>, service: Declaration<T>): void;
+  get<T>(service: Injectable<T>): T;
+}
 
 /**
  * Injector class
- * @class
  */
-export class Injector {
+export class Injector implements InjectorInterface {
   private readonly parent?: Injector;
-  private readonly providers = new Map<any, Provider>();
-  private readonly cache = new Map<any, any>();
-  /**
-   * @param {Injector} injector Parent injector
-   */
+  private readonly providers = new Map<Injectable<any>, Declaration<any>>();
+  private readonly cache = new Map<Injectable<any>, any>();
   constructor(injector?: Injector) {
     this.parent = injector;
   }
 
   /**
-   * Register provider, can replace existing override one from parent injector
-   * @param {*} token Token to be used as provider id
-   * @param {function} factory Factory function used to create instance
-   * @param {*} deps Tokens identifying services to be injected into factory
-   * @returns {*}
+   * Register service, can replace existing override one from parent injector
    */
-  register<T, F extends Factory<T> = Factory<T>>(
-    token: Token<T>,
-    factory: F,
-    ...deps: Token[]
-  ) {
-    this.providers.set(token, [factory, deps]);
-    return token;
+  register<T>(service: Declaration<T>): void;
+  // eslint-disable-next-line no-dupe-class-members
+  register<T>(token: Injectable<T>, service: Declaration<T>): void;
+  // eslint-disable-next-line no-dupe-class-members
+  register<T>(token: Injectable<T>, service?: Declaration<T>): void {
+    if (service) {
+      this.providers.set(token, service);
+    } else {
+      this.providers.set(token, token as Declaration<T>);
+    }
   }
 
   /**
-   * Resolve provider for service
-   * @param {*} token Token identifying required service
-   * @returns {Injector|function}
+   * Resolve service declaration
    */
-  private resolve<T>(token: Token<T>): Provider<T> {
-    if (token === Injector) return [() => (this as unknown) as T, []];
+  private resolve<T>(token: Injectable<T>): Declaration<T> {
+    // todo: getting not last injector
+    // if (token === InjectorToken)
+    //   return new Declaration([], () => (this as unknown) as T);
     return (
       this.providers.get(token)! || (this.parent && this.parent.resolve(token))
     );
@@ -50,17 +51,13 @@ export class Injector {
 
   /**
    * Find all dependencies for specified token, can contain duplicates
-   * @param {*} token
-   * @param {*} fromToken
-   * @param {Injector} startInjector
-   * @returns {Array}
    */
   private deps(
-    token: Token,
-    fromToken?: Token,
+    token: Injectable<any>,
+    fromToken?: Injectable<any>,
     startInjector: Injector = this
-  ): Token[] {
-    if (token === Injector) return [];
+  ): Injectable<any>[] {
+    if (token === InjectorToken) return [];
     if (token === fromToken) {
       throw new Error(
         `Cyclic dependency: "${tokenName(token)}" depends on itself`
@@ -69,7 +66,7 @@ export class Injector {
 
     let directDeps;
     if (this.providers.has(token)) {
-      directDeps = this.providers.get(token)![1];
+      directDeps = this.providers.get(token)!.deps;
     }
 
     if (directDeps) {
@@ -89,35 +86,10 @@ export class Injector {
   }
 
   /**
-   * Check does service instance should be instantiated using this Injector(instead of parent one)
-   * @private
-   * @param {*} token
-   * @returns {*}
-   */
-  private shouldInstantiate(token: Token) {
-    const deps = new Set(this.deps(token));
-
-    if (this.providers.has(token) || !this.parent || token === Injector) {
-      return true;
-    }
-
-    return (
-      // first injector and no dependencies
-      (deps.size === 0 && !this.parent) ||
-      // Instance of current injector is required
-      deps.has(Injector) ||
-      // some of dependencies are overridden
-      [...this.providers.keys()].filter(t => deps.has(t)).length > 0
-    );
-  }
-
-  /**
    * Get service instance
-   * @param {*} token
-   * @returns {*}
    */
-  get<T>(token: Token<T>): T {
-    if (token === Injector) {
+  get<T>(token: Injectable<T>): T {
+    if (token === InjectorToken) {
       return (this as unknown) as T;
     }
 
@@ -125,9 +97,37 @@ export class Injector {
       return this.cache.get(token);
     }
 
-    if (this.shouldInstantiate(token)) {
-      const [factory, deps] = this.resolve(token);
-      const args = new Array(deps.length);
+    if (token instanceof Declaration) {
+      let injector: Injector = this;
+      let isRegistered = injector.providers.has(token);
+      // try to find injector which have provider for specified declaration
+      while (injector.parent && !isRegistered) {
+        isRegistered = injector.providers.has(token);
+        injector = injector.parent;
+      }
+      // if not found register it in root injector
+      if (!isRegistered) {
+        injector.register(token);
+      }
+    }
+
+    let shouldInstantiate = false;
+    const deps = new Set(this.deps(token));
+
+    if (this.providers.has(token) || !this.parent || token === InjectorToken) {
+      shouldInstantiate = true;
+    } else
+      shouldInstantiate =
+        // first injector and no dependencies
+        (deps.size === 0 && !this.parent) ||
+        // Instance of current injector is required
+        deps.has(InjectorToken) ||
+        // some of dependencies are overridden
+        !![...this.providers.keys()].find(t => deps.has(t));
+
+    if (shouldInstantiate) {
+      const { factory, deps } = this.resolve(token);
+      const args: any = new Array(deps.length);
       for (let i = 0, l = deps.length; i < l; i += 1) {
         args[i] = this.get(deps[i]);
       }

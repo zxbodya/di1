@@ -38,4 +38,8 @@ describe('Token name utility', () => {
   it('returns string representation of number if it is used as a token', () => {
     expect(tokenName(123)).toBe('123');
   });
+
+  it('return name property of object if present', () => {
+    expect(tokenName({ name: '123' })).toBe('123');
+  });
 });
