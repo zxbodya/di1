@@ -50,7 +50,7 @@ let svc = injector.get(svcToken)
 Replace service provider(should be called before service creation):
 
 ```js
-injector.provide(svcToken, newFactory)
+injector.register(svcToken, newFactory)
 ```
 
 Create injector for specific context, reusing existing services from existing injector 

@@ -3,7 +3,6 @@ import tokenName from './tokenName';
 
 type Token<T = any> = any;
 type Factory<T = any> = (...args: any) => T;
-
 type Provider<T = any> = [Factory<T>, Token[]];
 
 /**
@@ -12,8 +11,8 @@ type Provider<T = any> = [Factory<T>, Token[]];
  */
 export class Injector {
   private readonly parent?: Injector;
-  private providers = new Map<any, Provider>();
-  private cache = new Map<any, any>();
+  private readonly providers = new Map<any, Provider>();
+  private readonly cache = new Map<any, any>();
   /**
    * @param {Injector} injector Parent injector
    */
@@ -28,7 +27,7 @@ export class Injector {
    * @param {*} deps Tokens identifying services to be injected into factory
    * @returns {*}
    */
-  provide<T, F extends Factory<T> = Factory<T>>(
+  register<T, F extends Factory<T> = Factory<T>>(
     token: Token<T>,
     factory: F,
     ...deps: Token[]
@@ -141,7 +140,6 @@ export class Injector {
 
   /**
    * Create child injector using this as parent
-   * @returns {Injector}
    */
   createChild() {
     return new Injector(this);

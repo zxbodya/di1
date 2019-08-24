@@ -1,81 +1,75 @@
 import { Injector } from './Injector';
 
 describe('DI Container', () => {
-  let injector: Injector;
+  let rootInjector: Injector;
 
   beforeEach(() => {
-    injector = new Injector();
-    injector.provide(10, () => 10);
-    injector.provide(11, ten => ten + 1, 10);
-    injector.provide(21, (ten, eleven) => ten + eleven, 10, 11);
+    rootInjector = new Injector();
+    rootInjector.register(10, () => 10);
+    rootInjector.register(11, ten => ten + 1, 10);
+    rootInjector.register(21, (ten, eleven) => ten + eleven, 10, 11);
   });
 
   it('resolves simple dependencies', () => {
-    injector.provide(1, () => 1);
-    injector.provide(2, () => 2);
-    injector.provide(3, (one, two) => one + two, 1, 2);
+    rootInjector.register(1, () => 1);
+    rootInjector.register(2, () => 2);
+    rootInjector.register(3, (one, two) => one + two, 1, 2);
 
-    expect(injector.get(3)).toBe(3);
+    expect(rootInjector.get(3)).toBe(3);
   });
 
   it('throws for non existing token', () => {
-    expect(() => injector.get(1)).toThrow(
+    expect(() => rootInjector.get(1)).toThrow(
       new Error('Provider for "1" not found')
     );
-    expect(() => injector.get(123)).toThrow(
+    expect(() => rootInjector.get(123)).toThrow(
       new Error('Provider for "123" not found')
     );
   });
 
   it('throws for cyclic dependencies', () => {
-    injector.provide(1, () => 1, 2);
-    injector.provide(2, () => 2, 1);
-    expect(() => injector.get(1)).toThrow(
+    rootInjector.register(1, () => 1, 2);
+    rootInjector.register(2, () => 2, 1);
+    expect(() => rootInjector.get(1)).toThrow(
       new Error('Cyclic dependency: "1" depends on itself')
     );
   });
 
   it('caches instance after creation', () => {
-    injector.provide(1, () => ({}));
+    rootInjector.register(1, () => ({}));
 
-    expect(injector.get(1)).toEqual(injector.get(1));
+    expect(rootInjector.get(1)).toEqual(rootInjector.get(1));
   });
 
-  it('uses provide from parent injector', () => {
-    injector.provide(1, () => 1);
+  it('uses provider from parent injector', () => {
+    rootInjector.register(1, () => 1);
 
-    const child = injector.createChild();
-    child.provide(2, one => one + 1, 1);
+    const child = rootInjector.createChild();
+    child.register(2, one => one + 1, 1);
 
     expect(child.get(2)).toEqual(2);
   });
 
-  it('overrides provides from parent injector with provides from child', () => {
-    injector.provide(1, () => 1);
+  it('child can override provider from parent', () => {
+    rootInjector.register(1, () => 1);
 
-    const child = injector.createChild();
-    child.provide(1, () => 2);
-    child.provide(3, one => one + 1, 1);
+    const child = rootInjector.createChild();
+    child.register(1, () => 2);
+    child.register(3, one => one + 1, 1);
 
     expect(child.get(3)).toEqual(3);
-  });
-
-  it('uses default provides', () => {
-    expect(injector.get(10)).toBe(10);
-    expect(injector.get(11)).toBe(11);
-    expect(injector.get(21)).toBe(21);
   });
 
   it('reuses instances from parent injector', () => {
     let cnt = 0;
 
-    injector.provide(1, () => {
+    rootInjector.register(1, () => {
       cnt += 1;
       return {};
     });
 
-    const child = injector.createChild();
-    injector.get(1);
+    const child = rootInjector.createChild();
+    rootInjector.get(1);
     child.get(1);
 
     expect(cnt).toEqual(1);
@@ -83,8 +77,8 @@ describe('DI Container', () => {
 
   it('do not reuse instances from parent injector, if one of dependencies is overridden', () => {
     let cnt = 0;
-    injector.provide(3, () => 3);
-    injector.provide(
+    rootInjector.register(3, () => 3);
+    rootInjector.register(
       1,
       () => {
         cnt += 1;
@@ -93,48 +87,33 @@ describe('DI Container', () => {
       3
     );
 
-    const child = injector.createChild();
-    injector.get(1);
-    child.provide(3, () => 4);
+    const child = rootInjector.createChild();
+    rootInjector.get(1);
+    child.register(3, () => 4);
     child.get(1);
     expect(cnt).toEqual(2);
   });
 
-  it('allows to add new default providers after Injector was created', () => {
-    injector.provide(12, () => 12);
-    expect(injector.get(12)).toEqual(12);
-  });
-
-  it('should return itself when Injector instance is required', () => {
-    expect(injector.get(Injector)).toEqual(injector);
-    const child = injector.createChild();
+  it('should return itself when Injector instance is requested', () => {
+    expect(rootInjector.get(Injector)).toEqual(rootInjector);
+    const child = rootInjector.createChild();
     expect(child.get(Injector)).toEqual(child);
-    child.provide('injectorId', id => id, Injector);
+    child.register('injectorId', id => id, Injector);
     expect(child.get('injectorId')).toEqual(child);
   });
 
   it('should use "latest" injector when instantiating with injector dependency', () => {
-    injector.provide('injectorId', id => id, Injector);
-    const child = injector.createChild();
+    rootInjector.register('injectorId', id => id, Injector);
+    const child = rootInjector.createChild();
     expect(child.get('injectorId')).toEqual(child);
   });
 
-  it('annotate function works', () => {
-    const fn12 = () => 12;
-    const fn10Plus = (arg: number) => 10 + arg;
-    injector.provide(fn12, fn12);
-    injector.provide(fn10Plus, fn10Plus, fn12);
-    expect(injector.get(fn10Plus)).toEqual(22);
-  });
+  it('allows to provider with dependency provided later in child injector', () => {
+    rootInjector.register('a', b => `a1=${b}`, 'b');
+    rootInjector.register('b', c => `b2=${c}`, 'c');
 
-  it('allows to define provider only in child injector', () => {
-    const ri = new Injector();
-
-    ri.provide('a', b => `a1=${b}`, 'b');
-    ri.provide('b', c => `b2=${c}`, 'c');
-
-    const ci = ri.createChild();
-    ci.provide('c', () => 'c2');
-    expect(ci.get('a')).toEqual('a1=b2=c2');
+    const child = rootInjector.createChild();
+    child.register('c', () => 'c2');
+    expect(child.get('a')).toEqual('a1=b2=c2');
   });
 });
