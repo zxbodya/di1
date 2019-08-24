@@ -1,11 +1,12 @@
-function truncate(str, maxLength) {
+function truncate(str: string, maxLength: number): string {
   if (str.length > maxLength) {
     return str.substr(0, maxLength);
   }
   return str;
 }
 
-export default function tokenName(token) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function tokenName(token: any): string {
   if (typeof token === 'function') {
     if (token.name) {
       return token.name;

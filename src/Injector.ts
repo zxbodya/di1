@@ -1,18 +1,26 @@
+/* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-non-null-assertion */
 import tokenName from './tokenName';
 
-const defaultProviders = new Map();
+export const defaultProviders = new Map();
+
+export type Token<T = any> = any;
+export type Factory<T = any> = (...args: any) => T;
+type Provider<T = any> = [Factory<T>, Token[]];
 
 /**
  * Injector class
  * @class
  */
 export class Injector {
+  private readonly parent?: Injector;
+  private providers: Map<any, Provider>;
+  private cache: Map<any, any>;
   /**
    * @param {Injector} injector Parent injector
    * @param {Map} providers Map instance containing providers declaration to be used by injector
    * @param {Map} cache Map instance used to cache created instances
    */
-  constructor(injector = null, providers = new Map(), cache = new Map()) {
+  constructor(injector?: Injector, providers = new Map(), cache = new Map()) {
     this.providers = providers;
     this.cache = cache;
     this.parent = injector;
@@ -25,7 +33,11 @@ export class Injector {
    * @param {*} deps Tokens identifying services to be injected into factory
    * @returns {*}
    */
-  provide(token, factory, ...deps) {
+  provide<T, F extends Factory<T> = Factory<T>>(
+    token: Token<T>,
+    factory: F,
+    ...deps: Token[]
+  ) {
     this.providers.set(token, [factory, deps]);
     return token;
   }
@@ -35,7 +47,7 @@ export class Injector {
    * @param {*} token Token identifying required service
    * @returns {Injector|function}
    */
-  resolve(token) {
+  private resolve<T>(token: Token<T>): Provider<T> {
     return (
       this.providers.get(token) ||
       (this.parent && this.parent.resolve(token)) ||
@@ -50,7 +62,11 @@ export class Injector {
    * @param {Injector} startInjector
    * @returns {Array}
    */
-  deps(token, fromToken, startInjector = this) {
+  private deps(
+    token: Token,
+    fromToken?: Token,
+    startInjector: Injector = this
+  ): Token[] {
     if (token === fromToken) {
       throw new Error(
         `Cyclic dependency: "${tokenName(token)}" depends on itself`
@@ -59,7 +75,7 @@ export class Injector {
 
     let directDeps;
     if (this.providers.has(token)) {
-      directDeps = this.providers.get(token)[1];
+      directDeps = this.providers.get(token)![1];
     } else if (!this.parent && defaultProviders.has(token)) {
       directDeps = defaultProviders.get(token)[1];
     }
@@ -86,7 +102,7 @@ export class Injector {
    * @param {*} token
    * @returns {*}
    */
-  shouldInstantiate(token) {
+  private shouldInstantiate(token: Token) {
     const deps = new Set(this.deps(token));
 
     if (
@@ -111,9 +127,9 @@ export class Injector {
    * @param {*} token
    * @returns {*}
    */
-  get(token) {
+  get<T>(token: Token<T>): T {
     if (token === Injector) {
-      return this;
+      return (this as unknown) as T;
     }
 
     if (this.cache.has(token)) {
@@ -128,9 +144,9 @@ export class Injector {
       }
       const instance = factory(...args);
       this.cache.set(token, instance);
-      return instance;
+      return instance as T;
     }
-    return this.parent.get(token);
+    return this.parent!.get(token);
   }
 
   /**
@@ -143,32 +159,3 @@ export class Injector {
 }
 
 defaultProviders.set(Injector, [null, []]);
-
-/**
- * Register default provider, will return passed token
- * @param {*} token
- * @param {function} factory
- * @param {*} deps
- * @returns {*}
- */
-export function provide(token, factory, ...deps) {
-  defaultProviders.set(token, [factory, deps]);
-  return token;
-}
-
-/**
- * Shortcut to provide when factory and token are the same.
- * Return passed factory
- * @param {function} factory
- * @param {*} deps
- * @returns {function}
- */
-export function annotate(factory, ...deps) {
-  return provide(factory, factory, ...deps);
-}
-
-export default {
-  annotate,
-  provide,
-  Injector,
-};

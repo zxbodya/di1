@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "declarationDir": "./lib",
+    "moduleResolution": "node",
+    "module": "es6",
+    "strict": true,
+    "outDir": "./lib",
+    "target": "es5",
+    "downlevelIteration": true,
+    "lib": [
+      "es5",
+      "es2015.collection",
+      "es2015.core",
+      "es2015.iterable",
+      "es2016.array.include",
+      "es2017"
+    ]
+  },
+  "include": [
+    "src/**/*"
+  ]
+}

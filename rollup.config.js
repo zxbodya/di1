@@ -1,17 +1,13 @@
-import babel from 'rollup-plugin-babel';
+import typescript from 'rollup-plugin-typescript2';
 import pkg from './package.json';
+import tempDir from 'temp-dir';
 
 export default {
-  input: 'src/di.js',
-  external: ['@babel/runtime'],
+  input: 'src/index.ts',
+  external: ['tslib'],
   output: [
     { file: pkg.main, sourcemap: true, format: 'cjs' },
     { file: pkg.module, sourcemap: true, format: 'es' },
   ],
-  plugins: [
-    babel({
-      exclude: ['node_modules/**'],
-      runtimeHelpers: true,
-    }),
-  ],
+  plugins: [typescript({ cacheRoot: `${tempDir}/.rpt2_cache` })],
 };

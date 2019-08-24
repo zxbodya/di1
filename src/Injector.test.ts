@@ -1,11 +1,11 @@
-import { annotate, provide, Injector } from './di';
+import { annotate, provide, Injector } from './Injector';
 
 provide(10, () => 10);
 provide(11, ten => ten + 1, 10);
 provide(21, (ten, eleven) => ten + eleven, 10, 11);
 
 describe('DI Container', () => {
-  let injector;
+  let injector: Injector;
 
   beforeEach(() => {
     injector = new Injector();
@@ -122,7 +122,7 @@ describe('DI Container', () => {
 
   it('annotate function works', () => {
     const fn12 = () => 12;
-    const fn10Plus = arg => 10 + arg;
+    const fn10Plus = (arg: any) => 10 + arg;
     annotate(fn12, 12);
     annotate(fn10Plus, 12);
     expect(injector.get(fn10Plus)).toEqual(22);

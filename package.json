@@ -1,6 +1,6 @@
 {
   "name": "di1",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "Bogdan Savluk <savluk.bogdan@gmail.com>",
   "description": "Simple but yet powerful, DI container for JavaScript",
   "keywords": [
@@ -21,33 +21,38 @@
   "main": "lib/di.cjs.js",
   "module": "lib/di.esm.js",
   "scripts": {
-    "lint": "eslint ./src/",
+    "lint": "eslint ./src/**/*",
     "cover": "jest --coverage",
     "test": "jest",
     "build": "rimraf lib && rollup -c",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "upgrade-interactive": "npm-check --update"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",
     "@babel/plugin-proposal-class-properties": "^7.5.5",
     "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
-    "@babel/plugin-transform-runtime": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
-    "@babel/runtime": "^7.5.5",
-    "babel-core": "^7.0.0-bridge.0",
-    "babel-jest": "^24.8.0",
+    "@babel/preset-typescript": "^7.3.3",
+    "@types/jest": "^24.0.6",
+    "@typescript-eslint/eslint-plugin": "^2.0.0",
+    "@typescript-eslint/parser": "^2.0.0",
     "codecov": "^3.5.0",
-    "eslint": "^6.1.0",
-    "eslint-config-prettier": "^6.0.0",
+    "eslint": "^6.2.2",
+    "eslint-config-prettier": "^6.1.0",
     "eslint-plugin-prettier": "^3.1.0",
-    "jest": "^24.8.0",
+    "jest": "^24.9.0",
+    "npm-check": "^5.9.0",
     "prettier": "^1.18.2",
-    "rimraf": "^2.6.3",
-    "rollup": "^1.18.0",
-    "rollup-plugin-babel": "^4.3.3"
+    "rimraf": "^3.0.0",
+    "rollup": "^1.20.1",
+    "rollup-plugin-typescript2": "^0.23.0",
+    "temp-dir": "^2.0.0",
+    "typescript": "^3.5.3"
   },
-  "dependencies": {
-    "@babel/runtime": "^7.5.5"
+  "dependencies": {},
+  "peerDependencies": {
+    "tslib": "^1.9.3"
   },
   "prettier": {
     "singleQuote": true,

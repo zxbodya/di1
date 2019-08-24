@@ -2,6 +2,7 @@ import tokenName from './tokenName';
 
 describe('Token name utility', () => {
   it('returns function name when available', () => {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     function abc() {}
 
     expect(tokenName(abc)).toBe('abc');
@@ -25,7 +26,7 @@ describe('Token name utility', () => {
   it('returns "unnamed:[object Constructor]" when object is used', () => {
     expect(tokenName({})).toBe('unnamed:[object Object]');
 
-    function Abc() {}
+    class Abc {}
 
     expect(tokenName(new Abc())).toMatch(/^unnamed:\[object \w+]$/);
   });
