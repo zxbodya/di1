@@ -1,9 +1,12 @@
 # Changelog
 
-## 0.4.0 (TBD)
+## 0.4.0 (2019-08-25)
 **Breaking changes**
 
-Complete api redesign, focusing on type safety. 
+- complete api redesign, focusing on making it smaller and more expressive
+- better error message when having cyclic dependencies
+- additional check to prevent using container from factory function(preventing infinite recursion from happening)
+- better TypeScript support
 
 ## 0.3.0 (2019-08-24)
 - migrate to typescript
