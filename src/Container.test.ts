@@ -151,7 +151,29 @@ describe('DI Container', () => {
 
     const svc2token = createToken<SVC2>('svc2');
     const svc1 = declareServiceRaw(container => {
-      // todo: additional error when trying to call container from factory
+      return () => container.get(svc2token);
+    }, containerToken(svc2token));
+
+    const svc2 = declareServiceRaw(svc1 => {
+      return {
+        svc1,
+      };
+    }, svc1);
+    rootInjector.register(svc2token, svc2);
+
+    const svc1Instance = rootInjector.get(svc1);
+    const svc2instance = svc1Instance();
+    expect(svc2instance.svc1).toEqual(svc1Instance);
+  });
+
+  it('throws when trying to use injector directly from factory function', () => {
+    type SVC1 = () => SVC2;
+    type SVC2 = { svc1: SVC1 };
+
+    const svc2token = createToken<SVC2>('svc2');
+    const svc1 = declareServiceRaw(container => {
+      expect(() => container.get(svc2token)).toThrow();
+      expect(() => container.register(svc1)).toThrow();
       return () => container.get(svc2token);
     }, containerToken(svc2token));
 

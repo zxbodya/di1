@@ -52,6 +52,7 @@ export class Container implements ContainerInterface {
     excludes: Set<Injectable<any>> = new Set()
   ): Injectable<any>[] {
     if (token === fromToken) {
+      // todo: improve debug experience by showing whole dependency chain
       throw new Error(
         `Cyclic dependency: "${tokenName(token)}" depends on itself`
       );
@@ -141,7 +142,33 @@ export class Container implements ContainerInterface {
       for (let i = 0, l = deps.length; i < l; i += 1) {
         args[i] = this.get(deps[i]);
       }
+      // when creating service with dependency on Container, it is possible that it would be used during creation
+      // effectively causing infinite recursion
+      // this code is to prevent this from happening
+      const containerIndices = [];
+      for (let i = 0, l = args.length; i < l; i += 1) {
+        const arg = args[i];
+        if (arg instanceof Container) {
+          containerIndices.push(i);
+          arg.get = () => {
+            throw new Error(
+              'Using container.get() from factory function is not allowed.'
+            );
+          };
+          arg.register = () => {
+            throw new Error(
+              'Using container.register() from factory function is not allowed.'
+            );
+          };
+        }
+      }
       const instance = factory(...args);
+      // removing debug code added above
+      for (let i = 0, l = containerIndices.length; i < l; i += 1) {
+        const arg = args[containerIndices[i]];
+        delete arg.get;
+        delete arg.register;
+      }
       this.cache.set(token, instance);
       return instance as T;
     }
