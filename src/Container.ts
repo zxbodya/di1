@@ -47,14 +47,15 @@ export class Container implements ContainerInterface {
    */
   private deps(
     token: Injectable<any>,
-    fromToken?: Injectable<any>,
+    chain: Array<Injectable<any>>,
     startContainer: Container = this,
     excludes: Set<Injectable<any>> = new Set()
   ): Injectable<any>[] {
-    if (token === fromToken) {
-      // todo: improve debug experience by showing whole dependency chain
+    if (token === chain[0]) {
       throw new Error(
-        `Cyclic dependency: "${tokenName(token)}" depends on itself`
+        `Cyclic dependency: "${chain
+          .map(t => tokenName(t))
+          .join('->')}->${tokenName(token)}"`
       );
     }
 
@@ -66,7 +67,7 @@ export class Container implements ContainerInterface {
     function computeDeps(
       deps: Injectable<any>[],
       excludes: Set<Injectable<any>>,
-      fromToken?: Injectable<any>
+      chain: Array<Injectable<any>>
     ) {
       const result = [];
       for (let i = 0, l = deps.length; i < l; i += 1) {
@@ -74,7 +75,7 @@ export class Container implements ContainerInterface {
         if (!excludes.has(dep)) {
           result.push(dep);
           result.push(
-            ...startContainer.deps(dep, fromToken, startContainer, excludes)
+            ...startContainer.deps(dep, chain, startContainer, excludes)
           );
         }
       }
@@ -82,18 +83,19 @@ export class Container implements ContainerInterface {
     }
 
     if (directDeps) {
-      return computeDeps(directDeps, excludes, fromToken || token);
+      return computeDeps(directDeps, excludes, chain.concat(token));
     } else {
       if (token instanceof ContainerToken) {
         return computeDeps(
           token.deps,
-          new Set<Injectable<any>>([fromToken!, ...excludes])
+          new Set<Injectable<any>>([chain[chain.length - 1], ...excludes]),
+          []
         );
       }
     }
 
     if (this.parent) {
-      return this.parent.deps(token, fromToken, startContainer);
+      return this.parent.deps(token, chain, startContainer);
     }
     throw new Error(`Provider for "${tokenName(token)}" not found`);
   }
@@ -125,7 +127,7 @@ export class Container implements ContainerInterface {
     }
 
     let shouldInstantiate = false;
-    const deps = new Set(this.deps(token));
+    const deps = new Set(this.deps(token, []));
 
     if (this.providers.has(token) || !this.parent) {
       shouldInstantiate = true;
