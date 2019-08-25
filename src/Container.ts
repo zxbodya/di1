@@ -2,27 +2,24 @@
 import tokenName from './tokenName';
 import { Declaration } from './Declaration';
 import { Injectable } from './Injectable';
-import { InjectorToken } from './InjectorToken';
+import { ContainerToken } from './ContainerToken';
 
-interface InjectorInterface {
+export interface ContainerInterface {
   register<T>(service: Declaration<T>): void;
   register<T>(token: Injectable<T>, service: Declaration<T>): void;
   get<T>(service: Injectable<T>): T;
 }
 
-/**
- * Injector class
- */
-export class Injector implements InjectorInterface {
-  private readonly parent?: Injector;
+export class Container implements ContainerInterface {
+  private readonly parent?: Container;
   private readonly providers = new Map<Injectable<any>, Declaration<any>>();
   private readonly cache = new Map<Injectable<any>, any>();
-  constructor(injector?: Injector) {
-    this.parent = injector;
+  constructor(parent?: Container) {
+    this.parent = parent;
   }
 
   /**
-   * Register service, can replace existing override one from parent injector
+   * Register service, can replace existing override one from parent container
    */
   register<T>(service: Declaration<T>): void;
   // eslint-disable-next-line no-dupe-class-members
@@ -51,7 +48,7 @@ export class Injector implements InjectorInterface {
   private deps(
     token: Injectable<any>,
     fromToken?: Injectable<any>,
-    startInjector: Injector = this,
+    startContainer: Container = this,
     excludes: Set<Injectable<any>> = new Set()
   ): Injectable<any>[] {
     if (token === fromToken) {
@@ -76,7 +73,7 @@ export class Injector implements InjectorInterface {
         if (!excludes.has(dep)) {
           result.push(dep);
           result.push(
-            ...startInjector.deps(dep, fromToken, startInjector, excludes)
+            ...startContainer.deps(dep, fromToken, startContainer, excludes)
           );
         }
       }
@@ -86,7 +83,7 @@ export class Injector implements InjectorInterface {
     if (directDeps) {
       return computeDeps(directDeps, excludes, fromToken || token);
     } else {
-      if (token instanceof InjectorToken) {
+      if (token instanceof ContainerToken) {
         return computeDeps(
           token.deps,
           new Set<Injectable<any>>([fromToken!, ...excludes])
@@ -95,7 +92,7 @@ export class Injector implements InjectorInterface {
     }
 
     if (this.parent) {
-      return this.parent.deps(token, fromToken, startInjector);
+      return this.parent.deps(token, fromToken, startContainer);
     }
     throw new Error(`Provider for "${tokenName(token)}" not found`);
   }
@@ -104,7 +101,7 @@ export class Injector implements InjectorInterface {
    * Get service instance
    */
   get<T>(token: Injectable<T>): T {
-    if (token instanceof InjectorToken) {
+    if (token instanceof ContainerToken) {
       return (this as unknown) as T;
     }
 
@@ -113,16 +110,16 @@ export class Injector implements InjectorInterface {
     }
 
     if (token instanceof Declaration) {
-      let injector: Injector = this;
-      let isRegistered = injector.providers.has(token);
-      // try to find injector which have provider for specified declaration
-      while (injector.parent && !isRegistered) {
-        isRegistered = injector.providers.has(token);
-        injector = injector.parent;
+      let container: Container = this;
+      let isRegistered = container.providers.has(token);
+      // try to find container which have provider for specified declaration
+      while (container.parent && !isRegistered) {
+        isRegistered = container.providers.has(token);
+        container = container.parent;
       }
-      // if not found register it in root injector
+      // if not found register it in root container
       if (!isRegistered) {
-        injector.register(token);
+        container.register(token);
       }
     }
 
@@ -133,7 +130,7 @@ export class Injector implements InjectorInterface {
       shouldInstantiate = true;
     } else
       shouldInstantiate =
-        // first injector and no dependencies
+        // first container and no dependencies
         (deps.size === 0 && !this.parent) ||
         // some of dependencies are overridden
         !![...this.providers.keys()].find(t => deps.has(t));
@@ -152,9 +149,9 @@ export class Injector implements InjectorInterface {
   }
 
   /**
-   * Create child injector using this as parent
+   * Create child container using this as parent
    */
   createChild() {
-    return new Injector(this);
+    return new Container(this);
   }
 }

@@ -2,13 +2,14 @@
   "name": "di1",
   "version": "0.4.0",
   "author": "Bogdan Savluk <savluk.bogdan@gmail.com>",
-  "description": "Simple but yet powerful, DI container for JavaScript",
+  "description": "Simple but yet powerful, DI container for JavaScript or TypeScript",
   "keywords": [
     "DI",
     "dependency injection",
     "ioc",
     "container",
-    "javascript"
+    "JavaScript",
+    "TypeCcript"
   ],
   "repository": {
     "type": "git",
@@ -18,8 +19,8 @@
   "engines": {
     "node": ">=8"
   },
-  "main": "lib/di.cjs.js",
-  "module": "lib/di.esm.js",
+  "main": "lib/index.js",
+  "module": "lib/index.esm.js",
   "scripts": {
     "lint": "eslint ./src/**/*",
     "cover": "jest --coverage",
@@ -45,7 +46,7 @@
     "npm-check": "^5.9.0",
     "prettier": "^1.18.2",
     "rimraf": "^3.0.0",
-    "rollup": "^1.20.1",
+    "rollup": "^1.20.2",
     "rollup-plugin-typescript2": "^0.23.0",
     "temp-dir": "^2.0.0",
     "typescript": "^3.5.3"

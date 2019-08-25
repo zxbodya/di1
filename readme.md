@@ -7,8 +7,9 @@ Key features are:
 
 * simplicity
 * no string identifiers required
-* possibility to create separate Injector instance for specific context (user session for example)
-* possibility to inject Injector instance - useful when dealing with circular dependencies 
+* possibility to create separate Container instance for specific context (user session for example)
+* possibility to inject Container instance - useful when dealing with circular dependencies
+* TypeScript support 
 
 ## Installation 
 
@@ -25,40 +26,40 @@ const svc2 = declareServiceRaw((one)=>1+one, svc1);
 
 // declaring a service specifying dependencies as object 
 const svc3 = declareService(
-  // dependencies declaration
+  // dependencies to inject
   { one: svc1, two: svc2 },
   ({ one, two })=>{
     return one + two;
   }
 )
 
-// create injector instance
-const rootInjector = new Injector();
+// create container instance
+const rootContainer = new Container();
 
 // get instance of specific service using declaration as token
-// service would be automatically registered at root injector
-rootInjector.get(svc3); // will return 3
+// service would be automatically registered at root container
+rootContainer.get(svc3); // will return 3
 
 // creating token for service to be registered later
 // token name is optional, but might be helpful for debug purposes
 const token1 = createToken<number>('one');
 
 // get instance of specific service using declaration as token
-rootInjector.register(token1, svc1); // will return 3
-rootInjector.get(token1); // will return 1 by creating new service instance using declaration svc1
+rootContainer.register(token1, svc1); // will return 3
+rootContainer.get(token1); // will return 1 by creating new service instance using declaration svc1
 
-// creating child injector
-const childInjector = rootInjector.createChild();
+// creating child container
+const childContainer = rootContainer.createChild();
 
-childInjector.get(svc3); // will return 3 by reusing service instance from parent injector
+childContainer.get(svc3); // will return 3 by reusing service instance from parent container
 
 // overriding existing implementation
-childInjector.register(svc2, declareServiceRaw(()=>0));
+childContainer.register(svc2, declareServiceRaw(()=>0));
 // now when requesting service with overridden dependency, new instance would be created
-// for svc1 dependency instance from parent injector would be used
-// for svc2 new instance would be created in child injector using new declaration
-childInjector.get(svc3); // will return 1 
-rootInjector.get(svc3); // will still use originally created instance (will return 3)
+// for svc1 dependency instance from parent container would be used
+// for svc2 new instance would be created in child container using new declaration
+childContainer.get(svc3); // will return 1 
+rootContainer.get(svc3); // will still use originally created instance (will return 3)
 
 // dealing with circular dependencies
 const t1 = createToken('t1');
@@ -69,33 +70,33 @@ const s1 = declareServiceRaw(
   }, t2);
 
 const s2 = declareServiceRaw(
-  (injector)=>{
+  (container)=>{
     return ()=>{
-      const s1 = injector.get(t1);
+      const s1 = container.get(t1);
     }
   }, 
-  injectorToken(t1)
+  containerToken(t1)
 );
 
-rootInjector.register(t1, s1);
-rootInjector.register(t2, s2);
+rootContainer.register(t1, s1);
+rootContainer.register(t2, s2);
 
-const s1instance = rootInjector.get(t1);
+const s1instance = rootContainer.get(t1);
 
 ```
 
-## Example use case for child injector
+## Example use case for child container
 
-Ability to create child injector is intended for for providing context specific implementations
+Ability to create child container is intended for for providing context specific implementations
 while reusing not specific when possible.
 
-For example, imagine simple shopping app, having following services registered in root injector: 
+For example, imagine simple shopping app, having following services registered in root container: 
 
 - `products` - provides access to products db 
 - `user` (depends on: `session`)
 - `cart` (depends on: `user`, `products`)
 
-And request specific `session` implementation registered in child injector, following will happen:
+And request specific `session` implementation registered in child container, following will happen:
 
 1. `products` service would be created once and will be reused across all requests
 2. but `cart` and `user` services will be created for each session separately

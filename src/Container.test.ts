@@ -1,10 +1,10 @@
-import { Injector } from './Injector';
+import { Container } from './Container';
 import { createToken } from './Token';
 import { declareServiceRaw } from './Declaration';
-import { injectorToken } from './InjectorToken';
+import { containerToken } from './ContainerToken';
 
 describe('DI Container', () => {
-  let rootInjector: Injector;
+  let rootInjector: Container;
 
   const token10 = createToken<number>('10');
   const token11 = createToken<number>('11');
@@ -15,7 +15,7 @@ describe('DI Container', () => {
   const token3 = createToken<number>('3');
 
   beforeEach(() => {
-    rootInjector = new Injector();
+    rootInjector = new Container();
 
     rootInjector.register(token10, declareServiceRaw(() => 10));
     rootInjector.register(token11, declareServiceRaw(ten => ten + 1, token10));
@@ -55,7 +55,7 @@ describe('DI Container', () => {
     expect(rootInjector.get(token1)).toEqual(rootInjector.get(token1));
   });
 
-  it('uses provider from parent injector', () => {
+  it('uses provider from parent container', () => {
     rootInjector.register(token1, declareServiceRaw(() => 1));
     const child = rootInjector.createChild();
     child.register(token2, declareServiceRaw(one => one + 1, token1));
@@ -73,7 +73,7 @@ describe('DI Container', () => {
     expect(child.get(token3)).toEqual(3);
   });
 
-  it('reuses instances from parent injector', () => {
+  it('reuses instances from parent container', () => {
     let cnt = 0;
 
     rootInjector.register(
@@ -91,7 +91,7 @@ describe('DI Container', () => {
     expect(cnt).toEqual(1);
   });
 
-  it('do not reuse instances from parent injector, if one of dependencies is overridden', () => {
+  it('do not reuse instances from parent container, if one of dependencies is overridden', () => {
     let cnt = 0;
     rootInjector.register(token3, declareServiceRaw(() => 3));
     rootInjector.register(
@@ -110,19 +110,19 @@ describe('DI Container', () => {
   });
 
   it('should return itself when Injector instance is requested', () => {
-    expect(rootInjector.get(injectorToken())).toEqual(rootInjector);
+    expect(rootInjector.get(containerToken())).toEqual(rootInjector);
 
     const child = rootInjector.createChild();
-    expect(child.get(injectorToken())).toEqual(child);
+    expect(child.get(containerToken())).toEqual(child);
 
-    const token = createToken('injectorId');
-    child.register(token, declareServiceRaw(id => id, injectorToken()));
+    const token = createToken('containerId');
+    child.register(token, declareServiceRaw(id => id, containerToken()));
     expect(child.get(token)).toEqual(child);
   });
 
   it('should return correct when Injector instance to create specified dependencies', () => {
-    const mockFactory = jest.fn(injector => injector);
-    const svc = declareServiceRaw(mockFactory, injectorToken(token10));
+    const mockFactory = jest.fn(container => container);
+    const svc = declareServiceRaw(mockFactory, containerToken(token10));
     rootInjector.register(svc);
     rootInjector.get(svc);
     expect(mockFactory.mock.calls.length).toEqual(1);
@@ -139,19 +139,21 @@ describe('DI Container', () => {
     expect(mockFactory.mock.calls[1]).toEqual([child2]);
   });
 
-  it('get injector directly', () => {
-    expect(rootInjector.get(injectorToken(token10, token11))).toEqual(rootInjector);
+  it('get container directly', () => {
+    expect(rootInjector.get(containerToken(token10, token11))).toEqual(
+      rootInjector
+    );
   });
 
-  it('should allow to declare injector dependency for creating specific services', () => {
+  it('should allow to declare container dependency for creating specific services', () => {
     type SVC1 = () => SVC2;
     type SVC2 = { svc1: SVC1 };
 
     const svc2token = createToken<SVC2>('svc2');
-    const svc1 = declareServiceRaw(injector => {
-      // todo: additional error when trying to call injector from factory
-      return () => injector.get(svc2token);
-    }, injectorToken(svc2token));
+    const svc1 = declareServiceRaw(container => {
+      // todo: additional error when trying to call container from factory
+      return () => container.get(svc2token);
+    }, containerToken(svc2token));
 
     const svc2 = declareServiceRaw(svc1 => {
       return {
@@ -165,7 +167,7 @@ describe('DI Container', () => {
     expect(svc2instance.svc1).toEqual(svc1Instance);
   });
 
-  it('allows to provider with dependency provided later in child injector', () => {
+  it('allows to provider with dependency provided later in child container', () => {
     const tokenA = createToken('a');
     const tokenB = createToken('b');
     const tokenC = createToken('c');
@@ -188,7 +190,7 @@ describe('DI Container', () => {
     expect(rootInjector.get(d)).toBe('a');
   });
 
-  it('when creating unregistered declaration it is registered at root injector', () => {
+  it('when creating unregistered declaration it is registered at root container', () => {
     const d = declareServiceRaw(() => `a`);
     const child = rootInjector.createChild();
     expect(child.get(d)).toBe('a');
