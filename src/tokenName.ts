@@ -5,6 +5,7 @@ function truncate(str: string, maxLength: number): string {
   return str;
 }
 
+// todo: it can be only token or declaration
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function tokenName(token: any): string {
   if (typeof token === 'object' && token.name) {

@@ -1,4 +1,4 @@
-import { Token } from './Token';
+import { Injectable } from './Injectable';
 
 type DependenciesArray = Array<Injectable<any>>;
 type FactoryArray<D extends DependenciesArray, S> = (...args: Unwrap<D>) => S;
@@ -12,8 +12,6 @@ export class Declaration<Service> {
     this.factory = factory;
   }
 }
-
-export type Injectable<T> = Token<T> | Declaration<T>;
 
 type Unwrap<D> = {
   readonly [k in keyof D]: D[k] extends Injectable<infer R> ? R : never;

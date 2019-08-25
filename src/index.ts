@@ -1,10 +1,5 @@
-import { Injector, InjectorToken } from './Injector';
+import { Injector } from './Injector';
 import { createToken } from './Token';
+import { injectorToken } from './InjectorToken';
 import { declareServiceRaw, declareService } from './Declaration';
-export {
-  Injector,
-  InjectorToken,
-  createToken,
-  declareService,
-  declareServiceRaw,
-};
+export { Injector, createToken, declareService, declareServiceRaw, injectorToken };

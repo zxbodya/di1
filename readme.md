@@ -60,13 +60,28 @@ childInjector.register(svc2, declareServiceRaw(()=>0));
 childInjector.get(svc3); // will return 1 
 rootInjector.get(svc3); // will still use originally created instance (will return 3)
 
-// Pass injector instance to factory:
-declareServiceRaw(
+// dealing with circular dependencies
+const t1 = createToken('t1');
+const t2 = createToken('t2');
+const s1 = declareServiceRaw(
+  (s2)=>{ 
+    return {s2};
+  }, t2);
+
+const s2 = declareServiceRaw(
   (injector)=>{
-    // will inject injector from which service was requested
+    return ()=>{
+      const s1 = injector.get(t1);
+    }
   }, 
-  InjectorToken
+  injectorToken(t1)
 );
+
+rootInjector.register(t1, s1);
+rootInjector.register(t2, s2);
+
+const s1instance = rootInjector.get(t1);
+
 ```
 
 ## Example use case for child injector

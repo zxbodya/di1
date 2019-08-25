@@ -1,6 +1,7 @@
-import { Injector, InjectorToken } from './Injector';
+import { Injector } from './Injector';
 import { createToken } from './Token';
 import { declareServiceRaw } from './Declaration';
+import { injectorToken } from './InjectorToken';
 
 describe('DI Container', () => {
   let rootInjector: Injector;
@@ -109,19 +110,59 @@ describe('DI Container', () => {
   });
 
   it('should return itself when Injector instance is requested', () => {
-    expect(rootInjector.get(InjectorToken)).toEqual(rootInjector);
+    expect(rootInjector.get(injectorToken())).toEqual(rootInjector);
+
     const child = rootInjector.createChild();
-    expect(child.get(InjectorToken)).toEqual(child);
+    expect(child.get(injectorToken())).toEqual(child);
+
     const token = createToken('injectorId');
-    child.register(token, declareServiceRaw(id => id, InjectorToken));
+    child.register(token, declareServiceRaw(id => id, injectorToken()));
     expect(child.get(token)).toEqual(child);
   });
 
-  it('should use "latest" injector when instantiating with injector dependency', () => {
-    const token = createToken('injectorId');
-    rootInjector.register(token, declareServiceRaw(id => id, InjectorToken));
-    const child = rootInjector.createChild();
-    expect(child.get(token)).toEqual(child);
+  it('should return correct when Injector instance to create specified dependencies', () => {
+    const mockFactory = jest.fn(injector => injector);
+    const svc = declareServiceRaw(mockFactory, injectorToken(token10));
+    rootInjector.register(svc);
+    rootInjector.get(svc);
+    expect(mockFactory.mock.calls.length).toEqual(1);
+    expect(mockFactory.mock.calls[0]).toEqual([rootInjector]);
+
+    const child1 = rootInjector.createChild();
+    child1.get(svc);
+    expect(mockFactory.mock.calls.length).toEqual(1);
+
+    const child2 = rootInjector.createChild();
+    child2.register(token10, declareServiceRaw(() => 0));
+    child2.get(svc);
+    expect(mockFactory.mock.calls.length).toEqual(2);
+    expect(mockFactory.mock.calls[1]).toEqual([child2]);
+  });
+
+  it('get injector directly', () => {
+    expect(rootInjector.get(injectorToken(token10, token11))).toEqual(rootInjector);
+  });
+
+  it('should allow to declare injector dependency for creating specific services', () => {
+    type SVC1 = () => SVC2;
+    type SVC2 = { svc1: SVC1 };
+
+    const svc2token = createToken<SVC2>('svc2');
+    const svc1 = declareServiceRaw(injector => {
+      // todo: additional error when trying to call injector from factory
+      return () => injector.get(svc2token);
+    }, injectorToken(svc2token));
+
+    const svc2 = declareServiceRaw(svc1 => {
+      return {
+        svc1,
+      };
+    }, svc1);
+    rootInjector.register(svc2token, svc2);
+
+    const svc1Instance = rootInjector.get(svc1);
+    const svc2instance = svc1Instance();
+    expect(svc2instance.svc1).toEqual(svc1Instance);
   });
 
   it('allows to provider with dependency provided later in child injector', () => {

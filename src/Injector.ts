@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-non-null-assertion */
 import tokenName from './tokenName';
-import { createToken } from './Token';
-import { Declaration, Injectable } from './Declaration';
-
-export const InjectorToken = createToken<Injector>('Injector');
+import { Declaration } from './Declaration';
+import { Injectable } from './Injectable';
+import { InjectorToken } from './InjectorToken';
 
 interface InjectorInterface {
   register<T>(service: Declaration<T>): void;
@@ -41,9 +40,6 @@ export class Injector implements InjectorInterface {
    * Resolve service declaration
    */
   private resolve<T>(token: Injectable<T>): Declaration<T> {
-    // todo: getting not last injector
-    // if (token === InjectorToken)
-    //   return new Declaration([], () => (this as unknown) as T);
     return (
       this.providers.get(token)! || (this.parent && this.parent.resolve(token))
     );
@@ -55,9 +51,9 @@ export class Injector implements InjectorInterface {
   private deps(
     token: Injectable<any>,
     fromToken?: Injectable<any>,
-    startInjector: Injector = this
+    startInjector: Injector = this,
+    excludes: Set<Injectable<any>> = new Set()
   ): Injectable<any>[] {
-    if (token === InjectorToken) return [];
     if (token === fromToken) {
       throw new Error(
         `Cyclic dependency: "${tokenName(token)}" depends on itself`
@@ -69,14 +65,33 @@ export class Injector implements InjectorInterface {
       directDeps = this.providers.get(token)!.deps;
     }
 
-    if (directDeps) {
+    function computeDeps(
+      deps: Injectable<any>[],
+      excludes: Set<Injectable<any>>,
+      fromToken?: Injectable<any>
+    ) {
       const result = [];
-      for (let i = 0, l = directDeps.length; i < l; i += 1) {
-        const dep = directDeps[i];
-        result.push(dep);
-        result.push(...startInjector.deps(dep, fromToken || token));
+      for (let i = 0, l = deps.length; i < l; i += 1) {
+        const dep = deps[i];
+        if (!excludes.has(dep)) {
+          result.push(dep);
+          result.push(
+            ...startInjector.deps(dep, fromToken, startInjector, excludes)
+          );
+        }
       }
       return result;
+    }
+
+    if (directDeps) {
+      return computeDeps(directDeps, excludes, fromToken || token);
+    } else {
+      if (token instanceof InjectorToken) {
+        return computeDeps(
+          token.deps,
+          new Set<Injectable<any>>([fromToken!, ...excludes])
+        );
+      }
     }
 
     if (this.parent) {
@@ -89,7 +104,7 @@ export class Injector implements InjectorInterface {
    * Get service instance
    */
   get<T>(token: Injectable<T>): T {
-    if (token === InjectorToken) {
+    if (token instanceof InjectorToken) {
       return (this as unknown) as T;
     }
 
@@ -114,14 +129,12 @@ export class Injector implements InjectorInterface {
     let shouldInstantiate = false;
     const deps = new Set(this.deps(token));
 
-    if (this.providers.has(token) || !this.parent || token === InjectorToken) {
+    if (this.providers.has(token) || !this.parent) {
       shouldInstantiate = true;
     } else
       shouldInstantiate =
         // first injector and no dependencies
         (deps.size === 0 && !this.parent) ||
-        // Instance of current injector is required
-        deps.has(InjectorToken) ||
         // some of dependencies are overridden
         !![...this.providers.keys()].find(t => deps.has(t));
 
