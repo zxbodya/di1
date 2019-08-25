@@ -17,21 +17,29 @@ Key features are:
 
 ## Usage example
 
-```js
+```typescript
 // declare service without dependencies
-const svc1 = declareServiceRaw(()=>1);
+import {
+  declareService,
+  declareServiceRaw,
+  Container,
+  createToken,
+  containerToken,
+} from 'di1';
+
+const svc1 = declareServiceRaw(() => 1);
 
 // declare service with dependency
-const svc2 = declareServiceRaw((one)=>1+one, svc1);
+const svc2 = declareServiceRaw(one => 1 + one, svc1);
 
-// declaring a service specifying dependencies as object 
+// declaring a service specifying dependencies as object
 const svc3 = declareService(
   // dependencies to inject
   { one: svc1, two: svc2 },
-  ({ one, two })=>{
+  ({ one, two }) => {
     return one + two;
   }
-)
+);
 
 // create container instance
 const rootContainer = new Container();
@@ -54,35 +62,30 @@ const childContainer = rootContainer.createChild();
 childContainer.get(svc3); // will return 3 by reusing service instance from parent container
 
 // overriding existing implementation
-childContainer.register(svc2, declareServiceRaw(()=>0));
+childContainer.register(svc2, declareServiceRaw(() => 0));
 // now when requesting service with overridden dependency, new instance would be created
 // for svc1 dependency instance from parent container would be used
 // for svc2 new instance would be created in child container using new declaration
-childContainer.get(svc3); // will return 1 
+childContainer.get(svc3); // will return 1
 rootContainer.get(svc3); // will still use originally created instance (will return 3)
 
 // dealing with circular dependencies
 const t1 = createToken('t1');
 const t2 = createToken('t2');
-const s1 = declareServiceRaw(
-  (s2)=>{ 
-    return {s2};
-  }, t2);
+const s1 = declareServiceRaw(s2 => {
+  return { s2 };
+}, t2);
 
-const s2 = declareServiceRaw(
-  (container)=>{
-    return ()=>{
-      const s1 = container.get(t1);
-    }
-  }, 
-  containerToken(t1)
-);
+const s2 = declareServiceRaw(container => {
+  return () => {
+    const s1 = container.get(t1);
+  };
+}, containerToken(t1));
 
 rootContainer.register(t1, s1);
 rootContainer.register(t2, s2);
 
 const s1instance = rootContainer.get(t1);
-
 ```
 
 ## Example use case for child container
