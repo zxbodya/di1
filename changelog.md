@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1 (2019-08-25)
+- improve readme
+- fix bug
+ 
 ## 0.4.0 (2019-08-25)
 **Breaking changes**
 

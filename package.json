@@ -1,6 +1,6 @@
 {
   "name": "di1",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "author": "Bogdan Savluk <savluk.bogdan@gmail.com>",
   "description": "Simple but yet powerful, DI container for JavaScript or TypeScript",
   "keywords": [
@@ -9,7 +9,7 @@
     "ioc",
     "container",
     "JavaScript",
-    "TypeCcript"
+    "TypeScript"
   ],
   "repository": {
     "type": "git",

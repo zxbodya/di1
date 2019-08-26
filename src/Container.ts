@@ -5,9 +5,10 @@ import { Injectable } from './Injectable';
 import { ContainerToken } from './ContainerToken';
 
 export interface ContainerInterface {
-  register<T>(service: Declaration<T>): void;
-  register<T>(token: Injectable<T>, service: Declaration<T>): void;
-  get<T>(service: Injectable<T>): T;
+  register<T>(declaration: Declaration<T>): void;
+  register<T>(token: Injectable<T>, declaration: Declaration<T>): void;
+  get<T>(token: Injectable<T>): T;
+  createChild(): ContainerInterface;
 }
 
 export class Container implements ContainerInterface {
@@ -21,13 +22,13 @@ export class Container implements ContainerInterface {
   /**
    * Register service, can replace existing override one from parent container
    */
-  register<T>(service: Declaration<T>): void;
+  register<T>(declaration: Declaration<T>): void;
   // eslint-disable-next-line no-dupe-class-members
-  register<T>(token: Injectable<T>, service: Declaration<T>): void;
+  register<T>(token: Injectable<T>, declaration: Declaration<T>): void;
   // eslint-disable-next-line no-dupe-class-members
-  register<T>(token: Injectable<T>, service?: Declaration<T>): void {
-    if (service) {
-      this.providers.set(token, service);
+  register<T>(token: Injectable<T>, declaration?: Declaration<T>): void {
+    if (declaration) {
+      this.providers.set(token, declaration);
     } else {
       this.providers.set(token, token as Declaration<T>);
     }
@@ -60,8 +61,14 @@ export class Container implements ContainerInterface {
     }
 
     let directDeps;
-    if (this.providers.has(token)) {
-      directDeps = this.providers.get(token)!.deps;
+    const declaration = this.providers.get(token);
+    if (declaration) {
+      directDeps = declaration!.deps;
+    } else {
+      if (token instanceof Declaration) {
+        this.ensureRegistered(token);
+        directDeps = token.deps;
+      }
     }
 
     function computeDeps(
@@ -112,19 +119,7 @@ export class Container implements ContainerInterface {
       return this.cache.get(token);
     }
 
-    if (token instanceof Declaration) {
-      let container: Container = this;
-      let isRegistered = container.providers.has(token);
-      // try to find container which have provider for specified declaration
-      while (container.parent && !isRegistered) {
-        isRegistered = container.providers.has(token);
-        container = container.parent;
-      }
-      // if not found register it in root container
-      if (!isRegistered) {
-        container.register(token);
-      }
-    }
+    this.ensureRegistered(token);
 
     let shouldInstantiate = false;
     const deps = new Set(this.deps(token, []));
@@ -175,6 +170,22 @@ export class Container implements ContainerInterface {
       return instance as T;
     }
     return this.parent!.get(token);
+  }
+
+  private ensureRegistered(token: Injectable<any>) {
+    if (token instanceof Declaration) {
+      let container: Container = this;
+      let isRegistered = container.providers.has(token);
+      // try to find container which have provider for specified declaration
+      while (container.parent && !isRegistered) {
+        isRegistered = container.providers.has(token);
+        container = container.parent;
+      }
+      // if not found register it in root container
+      if (!isRegistered) {
+        container.register(token);
+      }
+    }
   }
 
   /**

@@ -217,4 +217,12 @@ describe('DI Container', () => {
     // @ts-ignore checking private property
     expect(!!rootInjector.providers.get(d)).toEqual(true);
   });
+
+  it('resolves simple dependencies, for declaration that were not explicitly registered', () => {
+    const one = declareServiceRaw(() => 1);
+    const two = declareServiceRaw(() => 2);
+    const three = declareServiceRaw((one, two) => one + two, one, two);
+
+    expect(rootInjector.get(three)).toBe(3);
+  });
 });
