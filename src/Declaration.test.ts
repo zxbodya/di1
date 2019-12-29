@@ -22,7 +22,6 @@ test('declareService - factory is called with correct arguments', () => {
   const svc = declareService({ a, b, c }, factoryMock);
 
   expect(svc.deps).toEqual([a, b, c]);
-  // @ts-ignore
   expect(svc.factory(1, 2, 3)).toEqual(1);
   expect(factoryMock.mock.calls.length).toBe(1);
   expect(factoryMock.mock.calls[0]).toEqual([{ a: 1, b: 2, c: 3 }]);

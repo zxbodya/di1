@@ -17,8 +17,14 @@ describe('DI Container', () => {
   beforeEach(() => {
     rootInjector = new Container();
 
-    rootInjector.register(token10, declareServiceRaw(() => 10));
-    rootInjector.register(token11, declareServiceRaw(ten => ten + 1, token10));
+    rootInjector.register(
+      token10,
+      declareServiceRaw(() => 10)
+    );
+    rootInjector.register(
+      token11,
+      declareServiceRaw(ten => ten + 1, token10)
+    );
     rootInjector.register(
       token21,
       declareServiceRaw((ten, eleven) => ten + eleven, token10, token11)
@@ -26,8 +32,14 @@ describe('DI Container', () => {
   });
 
   it('resolves simple dependencies', () => {
-    rootInjector.register(token1, declareServiceRaw(() => 1));
-    rootInjector.register(token2, declareServiceRaw(() => 2));
+    rootInjector.register(
+      token1,
+      declareServiceRaw(() => 1)
+    );
+    rootInjector.register(
+      token2,
+      declareServiceRaw(() => 2)
+    );
     rootInjector.register(
       token3,
       declareServiceRaw((one, two) => one + two, token1, token2)
@@ -43,30 +55,54 @@ describe('DI Container', () => {
   });
 
   it('throws for cyclic dependencies', () => {
-    rootInjector.register(token1, declareServiceRaw(() => 1, token2));
-    rootInjector.register(token2, declareServiceRaw(() => 2, token1));
+    rootInjector.register(
+      token1,
+      declareServiceRaw(() => 1, token2)
+    );
+    rootInjector.register(
+      token2,
+      declareServiceRaw(() => 2, token1)
+    );
     expect(() => rootInjector.get(token1)).toThrow();
   });
 
   it('caches instance after creation', () => {
-    rootInjector.register(token1, declareServiceRaw(() => ({})));
+    rootInjector.register(
+      token1,
+      declareServiceRaw(() => ({}))
+    );
     expect(rootInjector.get(token1)).toEqual(rootInjector.get(token1));
   });
 
   it('uses provider from parent container', () => {
-    rootInjector.register(token1, declareServiceRaw(() => 1));
+    rootInjector.register(
+      token1,
+      declareServiceRaw(() => 1)
+    );
     const child = rootInjector.createChild();
-    child.register(token2, declareServiceRaw(one => one + 1, token1));
+    child.register(
+      token2,
+      declareServiceRaw(one => one + 1, token1)
+    );
 
     expect(child.get(token2)).toEqual(2);
   });
 
   it('child can override provider from parent', () => {
-    rootInjector.register(token1, declareServiceRaw(() => 1));
+    rootInjector.register(
+      token1,
+      declareServiceRaw(() => 1)
+    );
 
     const child = rootInjector.createChild();
-    child.register(token1, declareServiceRaw(() => 2));
-    child.register(token3, declareServiceRaw(one => one + 1, token1));
+    child.register(
+      token1,
+      declareServiceRaw(() => 2)
+    );
+    child.register(
+      token3,
+      declareServiceRaw(one => one + 1, token1)
+    );
 
     expect(child.get(token3)).toEqual(3);
   });
@@ -91,7 +127,10 @@ describe('DI Container', () => {
 
   it('do not reuse instances from parent container, if one of dependencies is overridden', () => {
     let cnt = 0;
-    rootInjector.register(token3, declareServiceRaw(() => 3));
+    rootInjector.register(
+      token3,
+      declareServiceRaw(() => 3)
+    );
     rootInjector.register(
       token1,
       declareServiceRaw(() => {
@@ -102,7 +141,10 @@ describe('DI Container', () => {
 
     const child = rootInjector.createChild();
     rootInjector.get(token1);
-    child.register(token3, declareServiceRaw(() => 4));
+    child.register(
+      token3,
+      declareServiceRaw(() => 4)
+    );
     child.get(token1);
     expect(cnt).toEqual(2);
   });
@@ -114,7 +156,10 @@ describe('DI Container', () => {
     expect(child.get(containerToken())).toEqual(child);
 
     const token = createToken('containerId');
-    child.register(token, declareServiceRaw(id => id, containerToken()));
+    child.register(
+      token,
+      declareServiceRaw(id => id, containerToken())
+    );
     expect(child.get(token)).toEqual(child);
   });
 
@@ -131,7 +176,10 @@ describe('DI Container', () => {
     expect(mockFactory.mock.calls.length).toEqual(1);
 
     const child2 = rootInjector.createChild();
-    child2.register(token10, declareServiceRaw(() => 0));
+    child2.register(
+      token10,
+      declareServiceRaw(() => 0)
+    );
     child2.get(svc);
     expect(mockFactory.mock.calls.length).toEqual(2);
     expect(mockFactory.mock.calls[1]).toEqual([child2]);
@@ -192,11 +240,20 @@ describe('DI Container', () => {
     const tokenB = createToken('b');
     const tokenC = createToken('c');
 
-    rootInjector.register(tokenA, declareServiceRaw(b => `a1=${b}`, tokenB));
-    rootInjector.register(tokenB, declareServiceRaw(c => `b2=${c}`, tokenC));
+    rootInjector.register(
+      tokenA,
+      declareServiceRaw(b => `a1=${b}`, tokenB)
+    );
+    rootInjector.register(
+      tokenB,
+      declareServiceRaw(c => `b2=${c}`, tokenC)
+    );
 
     const child = rootInjector.createChild();
-    child.register(tokenC, declareServiceRaw(() => 'c2'));
+    child.register(
+      tokenC,
+      declareServiceRaw(() => 'c2')
+    );
     expect(child.get(tokenA)).toEqual('a1=b2=c2');
   });
 

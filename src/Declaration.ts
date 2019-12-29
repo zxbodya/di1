@@ -5,7 +5,7 @@ type FactoryArray<D extends DependenciesArray, S> = (...args: Unwrap<D>) => S;
 
 export class Declaration<Service> {
   public name?: string;
-  public factory: FactoryArray<any, Service>;
+  public factory: FactoryArray<any[], Service>;
   public deps: DependenciesArray;
 
   constructor(deps: DependenciesArray, factory: FactoryArray<any, Service>) {
