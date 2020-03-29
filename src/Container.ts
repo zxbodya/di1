@@ -55,7 +55,7 @@ export class Container implements ContainerInterface {
     if (token === chain[0]) {
       throw new Error(
         `Cyclic dependency: "${chain
-          .map(t => tokenName(t))
+          .map((t) => tokenName(t))
           .join('->')}->${tokenName(token)}"`
       );
     }
@@ -131,7 +131,7 @@ export class Container implements ContainerInterface {
         // first container and no dependencies
         (deps.size === 0 && !this.parent) ||
         // some of dependencies are overridden
-        !![...this.providers.keys()].find(t => deps.has(t));
+        !![...this.providers.keys()].find((t) => deps.has(t));
 
     if (shouldInstantiate) {
       const { factory, deps } = this.resolve(token);

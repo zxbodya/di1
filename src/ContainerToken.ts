@@ -6,7 +6,7 @@ import tokenName from './tokenName';
 export class ContainerToken extends Token<ContainerInterface> {
   public readonly deps: Injectable<any>[];
   constructor(tokens: Injectable<any>[]) {
-    super(`Injector(${tokens.map(t => tokenName(t)).join(',')})`);
+    super(`Injector(${tokens.map((t) => tokenName(t)).join(',')})`);
     this.deps = tokens;
   }
 }

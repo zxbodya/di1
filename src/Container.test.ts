@@ -23,7 +23,7 @@ describe('DI Container', () => {
     );
     rootInjector.register(
       token11,
-      declareServiceRaw(ten => ten + 1, token10)
+      declareServiceRaw((ten) => ten + 1, token10)
     );
     rootInjector.register(
       token21,
@@ -82,7 +82,7 @@ describe('DI Container', () => {
     const child = rootInjector.createChild();
     child.register(
       token2,
-      declareServiceRaw(one => one + 1, token1)
+      declareServiceRaw((one) => one + 1, token1)
     );
 
     expect(child.get(token2)).toEqual(2);
@@ -101,7 +101,7 @@ describe('DI Container', () => {
     );
     child.register(
       token3,
-      declareServiceRaw(one => one + 1, token1)
+      declareServiceRaw((one) => one + 1, token1)
     );
 
     expect(child.get(token3)).toEqual(3);
@@ -158,13 +158,13 @@ describe('DI Container', () => {
     const token = createToken('containerId');
     child.register(
       token,
-      declareServiceRaw(id => id, containerToken())
+      declareServiceRaw((id) => id, containerToken())
     );
     expect(child.get(token)).toEqual(child);
   });
 
   it('should return correct when Injector instance to create specified dependencies', () => {
-    const mockFactory = jest.fn(container => container);
+    const mockFactory = jest.fn((container) => container);
     const svc = declareServiceRaw(mockFactory, containerToken(token10));
     rootInjector.register(svc);
     rootInjector.get(svc);
@@ -196,11 +196,11 @@ describe('DI Container', () => {
     type SVC2 = { svc1: SVC1 };
 
     const svc2token = createToken<SVC2>('svc2');
-    const svc1 = declareServiceRaw(container => {
+    const svc1 = declareServiceRaw((container) => {
       return () => container.get(svc2token);
     }, containerToken(svc2token));
 
-    const svc2 = declareServiceRaw(svc1 => {
+    const svc2 = declareServiceRaw((svc1) => {
       return {
         svc1,
       };
@@ -217,13 +217,13 @@ describe('DI Container', () => {
     type SVC2 = { svc1: SVC1 };
 
     const svc2token = createToken<SVC2>('svc2');
-    const svc1 = declareServiceRaw(container => {
+    const svc1 = declareServiceRaw((container) => {
       expect(() => container.get(svc2token)).toThrow();
       expect(() => container.register(svc1)).toThrow();
       return () => container.get(svc2token);
     }, containerToken(svc2token));
 
-    const svc2 = declareServiceRaw(svc1 => {
+    const svc2 = declareServiceRaw((svc1) => {
       return {
         svc1,
       };
@@ -242,11 +242,11 @@ describe('DI Container', () => {
 
     rootInjector.register(
       tokenA,
-      declareServiceRaw(b => `a1=${b}`, tokenB)
+      declareServiceRaw((b) => `a1=${b}`, tokenB)
     );
     rootInjector.register(
       tokenB,
-      declareServiceRaw(c => `b2=${c}`, tokenC)
+      declareServiceRaw((c) => `b2=${c}`, tokenC)
     );
 
     const child = rootInjector.createChild();

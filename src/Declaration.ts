@@ -37,7 +37,7 @@ export function declareService<S, D extends Dependencies>(
   f: Factory<D, S>
 ): Declaration<S> {
   const keys = Object.keys(d);
-  const deps = keys.map(k => d[k]);
+  const deps = keys.map((k) => d[k]);
   const argsFactory: any = (...args: any[]) => {
     const depsObj: any = {};
     for (let i = 0, l = keys.length; i < l; i += 1) {

@@ -6,7 +6,7 @@ test('declareService', () => {
   const n = createToken<number>();
   const s = createToken<string>();
 
-  declareService({ n, s, o }, d => {
+  declareService({ n, s, o }, (d) => {
     d.n.toExponential();
     d.o.a = 1;
     return 1;
