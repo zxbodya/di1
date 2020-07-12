@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.2 (2020-07-12)
+- type improvements, additional exports
+- move tslib to be dependency instead of peerDependency
+
 ## 0.4.1 (2019-08-25)
 - improve readme
 - fix bug

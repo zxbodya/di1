@@ -1,6 +1,6 @@
 {
   "name": "di1",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "author": "Bogdan Savluk <savluk.bogdan@gmail.com>",
   "description": "Simple but yet powerful, DI container for JavaScript or TypeScript",
   "keywords": [
@@ -23,12 +23,11 @@
   "module": "lib/index.esm.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "lint": "eslint ./src/**/*",
+    "lint": "eslint ./src/**/* --quiet",
     "cover": "jest --coverage",
     "test": "jest",
     "build": "rimraf lib && rollup -c",
-    "prepublish": "npm run build",
-    "upgrade-interactive": "npm-check --update"
+    "prepublish": "npm run build"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",
