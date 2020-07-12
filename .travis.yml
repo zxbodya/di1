@@ -9,10 +9,10 @@ cache:
     - node_modules
 
 install:
-  - npm install
+  - yarn install
 
 script:
-  - npm run lint && npm run cover
+  - yarn run lint && yarn run cover
 
 after_success:
   - ./node_modules/.bin/codecov

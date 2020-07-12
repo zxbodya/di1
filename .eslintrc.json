@@ -11,7 +11,7 @@
     "es6": true
   },
   "rules": {
-    "@typescript-eslint/ban-ts-ignore": 1,
+    "@typescript-eslint/ban-ts-comment": 1,
     "@typescript-eslint/no-this-alias": 0, // rule should not fire when alias is actually needed(and is reasigned to other value later)
     "@typescript-eslint/explicit-function-return-type": 0,
     "@typescript-eslint/explicit-member-accessibility": 0,
