@@ -21,6 +21,7 @@
   },
   "main": "lib/index.js",
   "module": "lib/index.esm.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "lint": "eslint ./src/**/*",
     "cover": "jest --coverage",
