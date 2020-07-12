@@ -69,7 +69,7 @@ describe('DI Container', () => {
   it('caches instance after creation', () => {
     rootInjector.register(
       token1,
-      declareServiceRaw(() => ({}))
+      declareServiceRaw(() => 0)
     );
     expect(rootInjector.get(token1)).toEqual(rootInjector.get(token1));
   });
@@ -114,7 +114,7 @@ describe('DI Container', () => {
       token1,
       declareServiceRaw(() => {
         cnt += 1;
-        return {};
+        return 0;
       })
     );
 
@@ -135,7 +135,7 @@ describe('DI Container', () => {
       token1,
       declareServiceRaw(() => {
         cnt += 1;
-        return {};
+        return 0;
       }, token3)
     );
 

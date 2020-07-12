@@ -5,7 +5,8 @@ export class Token<Service> {
   }
 
   // workaround for structural typing
-  private __special?: Service;
+  // to make sure tokens for different services can not be assigned to each other
+  public __special?: Service;
 }
 
 export function createToken<Service>(name?: string): Token<Service> {

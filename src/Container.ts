@@ -5,8 +5,11 @@ import { Injectable } from './Injectable';
 import { ContainerToken } from './ContainerToken';
 
 export interface ContainerInterface {
-  register<T>(declaration: Declaration<T>): void;
-  register<T>(token: Injectable<T>, declaration: Declaration<T>): void;
+  register<T, R extends T>(declaration: Declaration<R>): void;
+  register<T, R extends T>(
+    token: Injectable<T>,
+    declaration: Declaration<R>
+  ): void;
   get<T>(token: Injectable<T>): T;
   createChild(): ContainerInterface;
 }
@@ -24,9 +27,15 @@ export class Container implements ContainerInterface {
    */
   register<T>(declaration: Declaration<T>): void;
   // eslint-disable-next-line no-dupe-class-members
-  register<T>(token: Injectable<T>, declaration: Declaration<T>): void;
+  register<T, R extends T>(
+    token: Injectable<T>,
+    declaration: Declaration<R>
+  ): void;
   // eslint-disable-next-line no-dupe-class-members
-  register<T>(token: Injectable<T>, declaration?: Declaration<T>): void {
+  register<T, R extends T>(
+    token: Injectable<T>,
+    declaration?: Declaration<R>
+  ): void {
     if (declaration) {
       this.providers.set(token, declaration);
     } else {
@@ -191,7 +200,7 @@ export class Container implements ContainerInterface {
   /**
    * Create child container using this as parent
    */
-  createChild() {
+  createChild(): ContainerInterface {
     return new Container(this);
   }
 }

@@ -30,20 +30,20 @@ interface Dependencies {
   readonly [k: string]: Injectable<any>;
 }
 
-type Factory<D extends Dependencies, S = any> = (d: Unwrap<D>) => S;
+type Factory<D extends Dependencies, S = any> = (deps: Unwrap<D>) => S;
 
 export function declareService<S, D extends Dependencies>(
-  d: D,
-  f: Factory<D, S>
+  deps: D,
+  factory: Factory<D, S>
 ): Declaration<S> {
-  const keys = Object.keys(d);
-  const deps = keys.map((k) => d[k]);
+  const keys = Object.keys(deps);
+  const depsArray = keys.map((k) => deps[k]);
   const argsFactory: any = (...args: any[]) => {
     const depsObj: any = {};
     for (let i = 0, l = keys.length; i < l; i += 1) {
       depsObj[keys[i]] = args[i];
     }
-    return f(depsObj);
+    return factory(depsObj);
   };
-  return new Declaration<S>(deps, argsFactory);
+  return new Declaration<S>(depsArray, argsFactory);
 }

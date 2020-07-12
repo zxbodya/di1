@@ -9,3 +9,6 @@ export {
   declareServiceRaw,
   containerToken,
 };
+
+import type { Injectable, UnwrapInjectable } from './Injectable';
+export type { Injectable, UnwrapInjectable };
