@@ -5,12 +5,27 @@ import { Injectable } from './Injectable';
 import { ContainerToken } from './ContainerToken';
 
 export interface ContainerInterface {
+  /**
+   * Register service, can replace existing override one from parent container
+   */
   register<T, R extends T>(declaration: Declaration<R>): void;
+
+  /**
+   * Register service declaration for given token
+   */
   register<T, R extends T>(
     token: Injectable<T>,
     declaration: Declaration<R>
   ): void;
+
+  /**
+   * Get service instance. Creating new one or using previously created instance.
+   */
   get<T>(token: Injectable<T>): T;
+
+  /**
+   * Create child container using this as a parent
+   */
   createChild(): ContainerInterface;
 }
 
@@ -22,9 +37,6 @@ export class Container implements ContainerInterface {
     this.parent = parent;
   }
 
-  /**
-   * Register service, can replace existing override one from parent container
-   */
   register<T>(declaration: Declaration<T>): void;
   // eslint-disable-next-line no-dupe-class-members
   register<T, R extends T>(
@@ -116,9 +128,6 @@ export class Container implements ContainerInterface {
     throw new Error(`Provider for "${tokenName(token)}" not found`);
   }
 
-  /**
-   * Get service instance
-   */
   get<T>(token: Injectable<T>): T {
     if (token instanceof ContainerToken) {
       return (this as unknown) as T;
@@ -181,6 +190,10 @@ export class Container implements ContainerInterface {
     return this.parent!.get(token);
   }
 
+  /**
+   * Check if declaration is already registered, and if not - register it
+   * @param token
+   */
   private ensureRegistered(token: Injectable<any>) {
     if (token instanceof Declaration) {
       let container: Container = this;
@@ -197,9 +210,6 @@ export class Container implements ContainerInterface {
     }
   }
 
-  /**
-   * Create child container using this as parent
-   */
   createChild(): ContainerInterface {
     return new Container(this);
   }

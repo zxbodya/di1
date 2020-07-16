@@ -1,40 +1,54 @@
 import { Injectable } from './Injectable';
 
-type DependenciesArray = Array<Injectable<any>>;
-type FactoryArray<D extends DependenciesArray, S> = (...args: Unwrap<D>) => S;
+export type DependenciesArray = Array<Injectable<any>>;
+export type FactoryWithDependenciesDepsArray<D extends DependenciesArray, S> = (
+  ...args: UnwrapDependencies<D>
+) => S;
 
 export class Declaration<Service> {
   public name?: string;
-  public factory: FactoryArray<any[], Service>;
+  public factory: FactoryWithDependenciesDepsArray<any[], Service>;
   public deps: DependenciesArray;
 
-  constructor(deps: DependenciesArray, factory: FactoryArray<any, Service>) {
+  constructor(
+    deps: DependenciesArray,
+    factory: FactoryWithDependenciesDepsArray<any, Service>
+  ) {
     this.deps = deps;
     this.factory = factory;
     this.name = factory.name;
   }
 }
 
-type Unwrap<D> = {
+export type UnwrapDependencies<D> = {
   readonly [k in keyof D]: D[k] extends Injectable<infer R> ? R : never;
 };
 
+/**
+ * Declare service implementation, specifying dependencies as arguments
+ */
 export function declareServiceRaw<S, D extends Array<Injectable<any>>>(
-  factory: (...args: Unwrap<D>) => S,
+  factory: (...args: UnwrapDependencies<D>) => S,
   ...deps: D
 ): Declaration<S> {
   return new Declaration<S>(deps, factory);
 }
 
-interface Dependencies {
+export interface DependenciesObject {
   readonly [k: string]: Injectable<any>;
 }
 
-type Factory<D extends Dependencies, S = any> = (deps: Unwrap<D>) => S;
+export type FactoryWithDependenciesObject<
+  D extends DependenciesObject,
+  S = any
+> = (deps: UnwrapDependencies<D>) => S;
 
-export function declareService<S, D extends Dependencies>(
+/**
+ * Declare service implementation, specifying dependencies as an object
+ */
+export function declareService<S, D extends DependenciesObject>(
   deps: D,
-  factory: Factory<D, S>
+  factory: FactoryWithDependenciesObject<D, S>
 ): Declaration<S> {
   const keys = Object.keys(deps);
   const depsArray = keys.map((k) => deps[k]);

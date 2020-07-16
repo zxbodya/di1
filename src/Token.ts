@@ -9,6 +9,10 @@ export class Token<Service> {
   public __special?: Service;
 }
 
+/**
+ * Create token for referencing service in Container
+ * @param name descriptive name of the service for debug purposes
+ */
 export function createToken<Service>(name?: string): Token<Service> {
   return new Token<Service>(name);
 }

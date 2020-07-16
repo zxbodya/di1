@@ -3,13 +3,12 @@
 [![Build Status](https://travis-ci.org/zxbodya/di1.svg)](https://travis-ci.org/zxbodya/di1)
 [![codecov.io](https://codecov.io/github/zxbodya/di1/coverage.svg?branch=master)](https://codecov.io/github/zxbodya/di1?branch=master)
 
-Key features are:
+Dependency Injection Container for JavaScript, with following goals:
 
-* simplicity
-* no string identifiers required
+* minimalistic, and relatively simple to use
 * possibility to create separate Container instance for specific context (user session for example)
 * possibility to inject Container instance - useful when dealing with circular dependencies
-* TypeScript support 
+* good TypeScript support, allowing inferring for most of the things 
 
 ## Installation 
 
@@ -17,25 +16,83 @@ Key features are:
 
 ## API
 
-`function createToken(name?): Token` - creates token to be used for registering service or specifying dependency for service
+### Service tokens
 
-`function containerToken(...deps): Token`- creates special token
- used to specify dependency on container to request specified services later at runtime.  
- 
-Purpose of this is to make it possible to have cyclic dependencies. 
-Dependencies for token are needed to determine in which container to create service with this token in dependencies.
+Services inside DI container, can be referenced using tokens.
 
-`function declareService(depsObject, factory): Declaration` - creates service declaration using object specifying dependencies,
- and factory function to be called with object of dependency instances(having same shape as `depsObject`)
+Token for registering service or specifying dependency, can be created using `createToken` function:  
+```typescript
+function createToken<ServiceType>(name?: string): Token;
+```
 
-`function declareServiceRaw(factory, ...deps): Declaration` - more low level version of `declareService`, difference is that dependencies would be injected as function arguments into factory function.
+`name` argument here, is to be used for debug messages in cases like when having error about cyclic dependency.
 
-`class Container` - Dependency injection container. Represents registry of service declarations, and cache of already created instances. 
+There is also a special kind of which allows accessing DI container itself from a service.
+Such a token can be created using `containerToken` function:
+```typescript
+function containerToken(...deps: Injectable[]): Token
+```
 
-- `container.register(declaration)` - registers declaration in specified container
-- `container.register(tokenOrDeclaration, declaration)` - registers declaration with specific token, can be used as well to override previously registered declaration
-- `container.get(tokenOrDeclaration)` - creates service registered by specified token, if service was created previously - cached version would be used
-- `container.createChild()` - creates child container, which when possible will reuse services registered in parent container
+Which as an argument optionally has a list of dependencies which should be available for the container,
+this affects in which specific container in the hierarchy service using it is to be created.
+
+This is useful for more dynamic cases when requesting dependencies known only at runtime time.  
+
+Also, this makes it possible to have cyclic dependencies, in limited cases(which btw, better to be avoided whenever possible). 
+
+### Service declaration
+
+Typically service should be defined using `declareService` funtion:
+
+```typescript
+function declareService(depsObject, factory): Declaration;
+```
+
+which creates a service declaration using object specifying dependencies(list of service tokens or other declarations),
+ and a factory function to be called with object of dependency instances(having same shape as `depsObject`)
+
+There is also a bit more low level version of this:
+
+```typescript
+function declareServiceRaw(factory, ...deps): Declaration
+```
+
+the only difference is that dependencies would be injected as separate function arguments into factory function.
+It is slightly closer to how things work internally, but most of the difference is in how it looks.
+
+Supposedly `declareService` should be more convenient in most of the cases, and suggested as preferred option.  
+
+### DI Container
+
+`class Container` - Dependency injection container. Represents a registry of service declarations, and cache of already created instances. 
+
+#### Registering a service
+
+To register declaration for given token, or to replace/override previously declared service `register` method can be used:
+
+```typescript
+container.register(tokenOrDeclaration, declaration)
+```
+
+Because it is allowed to have service declaration as a dependency - it might be useful to register it to be created on specific layer in the container hierarchy.
+(by default it would be created in upper possible layer having all the dependencies) 
+
+For this case it is possible to register the declaration in the specific container (effectively limiting it to be created in it or its decedents) 
+```typescript
+container.register(declaration)
+```
+
+To create a service instance or to use previously created one - `get` method is to be used:  
+```typescript
+container.get(tokenOrDeclaration)
+```
+
+There are cases when there is a need for separate context for services to be created,
+while allowing to reuse some service instances from existing context, this can be done `createChild` method:
+
+```typescript
+container.createChild()
+```
 
 ## Usage example
 
@@ -120,8 +177,8 @@ const s1instance = rootContainer.get(t1);
 
 ## Example use case for child container
 
-Ability to create child container is intended for for providing context specific implementations
-while reusing not specific when possible.
+This is cases when there is a need to create a child container providing context specific implementations
+while reusing not specific whenever possible.
 
 For example, imagine simple shopping app, having following services registered in root container: 
 
@@ -129,7 +186,9 @@ For example, imagine simple shopping app, having following services registered i
 - `user` (depends on: `session`)
 - `cart` (depends on: `user`, `products`)
 
-And request specific `session` implementation registered in child container, following will happen:
+But `session` in request specific, and so implementation is to be registered in a child container(created per request),
 
-1. `products` service would be created once and will be reused across all requests
-2. but `cart` and `user` services will be created for each session separately
+the following will happen:
+
+1. `products` service would be created just once and will be reused across all requests
+2. `cart` and `user` services will be created for each session separately
