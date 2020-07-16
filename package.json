@@ -1,6 +1,6 @@
 {
   "name": "di1",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "author": "Bogdan Savluk <savluk.bogdan@gmail.com>",
   "description": "Simple but yet powerful, DI container for JavaScript or TypeScript",
   "keywords": [
