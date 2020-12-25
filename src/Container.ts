@@ -58,9 +58,9 @@ export class Container implements ContainerInterface {
   /**
    * Resolve service declaration
    */
-  private resolve<T>(token: Injectable<T>): Declaration<T> {
+  private resolve<T>(token: Injectable<T>): Declaration<T> | undefined {
     return (
-      this.providers.get(token)! || (this.parent && this.parent.resolve(token))
+      this.providers.get(token) || (this.parent && this.parent.resolve(token))
     );
   }
 
@@ -130,7 +130,7 @@ export class Container implements ContainerInterface {
 
   get<T>(token: Injectable<T>): T {
     if (token instanceof ContainerToken) {
-      return (this as unknown) as T;
+      return this as unknown as T;
     }
 
     if (this.cache.has(token)) {
@@ -139,7 +139,7 @@ export class Container implements ContainerInterface {
 
     this.ensureRegistered(token);
 
-    let shouldInstantiate = false;
+    let shouldInstantiate;
     const deps = new Set(this.deps(token, []));
 
     if (this.providers.has(token) || !this.parent) {
@@ -152,8 +152,9 @@ export class Container implements ContainerInterface {
         !![...this.providers.keys()].find((t) => deps.has(t));
 
     if (shouldInstantiate) {
-      const { factory, deps } = this.resolve(token);
-      const args: any = new Array(deps.length);
+      // resolve would return non null value, because of ensureRegistered call earlier
+      const { factory, deps } = this.resolve(token)!;
+      const args: any[] = new Array(deps.length);
       for (let i = 0, l = deps.length; i < l; i += 1) {
         args[i] = this.get(deps[i]);
       }
