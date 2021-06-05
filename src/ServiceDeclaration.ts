@@ -5,7 +5,7 @@ export type FactoryWithDependenciesDepsArray<D extends DependenciesArray, S> = (
   ...args: UnwrapDependencies<D>
 ) => S;
 
-export class Declaration<Service> {
+export class ServiceDeclaration<Service> {
   public name?: string;
   public factory: FactoryWithDependenciesDepsArray<any[], Service>;
   public deps: DependenciesArray;
@@ -30,8 +30,8 @@ export type UnwrapDependencies<D> = {
 export function declareServiceRaw<S, D extends Array<Injectable<any>>>(
   factory: (...args: UnwrapDependencies<D>) => S,
   ...deps: D
-): Declaration<S> {
-  return new Declaration<S>(deps, factory);
+): ServiceDeclaration<S> {
+  return new ServiceDeclaration<S>(deps, factory);
 }
 
 export interface DependenciesObject {
@@ -49,7 +49,7 @@ export type FactoryWithDependenciesObject<
 export function declareService<S, D extends DependenciesObject>(
   deps: D,
   factory: FactoryWithDependenciesObject<D, S>
-): Declaration<S> {
+): ServiceDeclaration<S> {
   const keys = Object.keys(deps);
   const depsArray = keys.map((k) => deps[k]);
   const argsFactory: any = (...args: any[]) => {
@@ -59,5 +59,5 @@ export function declareService<S, D extends DependenciesObject>(
     }
     return factory(depsObj);
   };
-  return new Declaration<S>(depsArray, argsFactory);
+  return new ServiceDeclaration<S>(depsArray, argsFactory);
 }

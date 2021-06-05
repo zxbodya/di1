@@ -28,9 +28,9 @@ function createToken<ServiceType>(name?: string): Token;
 `name` argument here, is to be used for debug messages in cases like when having error about cyclic dependency.
 
 There is also a special kind of which allows accessing DI container itself from a service.
-Such a token can be created using `containerToken` function:
+Such a token can be created using `injectorToken` function:
 ```typescript
-function containerToken(...deps: Injectable[]): Token
+function injectorToken(...deps: Injectable[]): Token
 ```
 
 Which as an argument optionally has a list of dependencies which should be available for the container,
@@ -45,7 +45,7 @@ Also, this makes it possible to have cyclic dependencies, in limited cases(which
 Typically service should be defined using `declareService` funtion:
 
 ```typescript
-function declareService(depsObject, factory): Declaration;
+function declareService(depsObject, factory): ServiceDeclaration;
 ```
 
 which creates a service declaration using object specifying dependencies(list of service tokens or other declarations),
@@ -54,7 +54,7 @@ which creates a service declaration using object specifying dependencies(list of
 There is also a bit more low level version of this:
 
 ```typescript
-function declareServiceRaw(factory, ...deps): Declaration
+function declareServiceRaw(factory, ...deps): ServiceDeclaration
 ```
 
 the only difference is that dependencies would be injected as separate function arguments into factory function.
@@ -64,14 +64,14 @@ Supposedly `declareService` should be more convenient in most of the cases, and 
 
 ### DI Container
 
-`class Container` - Dependency injection container. Represents a registry of service declarations, and cache of already created instances. 
+`class Injector` - Dependency injection container. Represents a registry of service declarations, and cache of already created instances. 
 
 #### Registering a service
 
 To register declaration for given token, or to replace/override previously declared service `register` method can be used:
 
 ```typescript
-container.register(tokenOrDeclaration, declaration)
+injector.register(tokenOrDeclaration, declaration)
 ```
 
 Because it is allowed to have service declaration as a dependency - it might be useful to register it to be created on specific layer in the container hierarchy.
@@ -79,19 +79,19 @@ Because it is allowed to have service declaration as a dependency - it might be 
 
 For this case it is possible to register the declaration in the specific container (effectively limiting it to be created in it or its decedents) 
 ```typescript
-container.register(declaration)
+injector.register(declaration)
 ```
 
 To create a service instance or to use previously created one - `get` method is to be used:  
 ```typescript
-container.get(tokenOrDeclaration)
+injector.get(tokenOrDeclaration)
 ```
 
 There are cases when there is a need for separate context for services to be created,
 while allowing to reuse some service instances from existing context, this can be done `createChild` method:
 
 ```typescript
-container.createChild()
+injector.createChild()
 ```
 
 ## Usage example
@@ -100,9 +100,9 @@ container.createChild()
 import {
   declareService,
   declareServiceRaw,
-  Container,
+  Injector,
   createToken,
-  containerToken,
+  injectorToken,
 } from 'di1';
 
 // declare service without dependencies
@@ -129,32 +129,32 @@ svc3.name = 'svc3';
 const svc4 = declareServiceRaw(function svc4(){ return 1 });
 
 // create container instance
-const rootContainer = new Container();
+const rootInjector = new Injector();
 
 // get instance of specific service
 // if not previously registered - declaration would be automatically registered at root container
-rootContainer.get(svc3); // will return 3
+rootInjector.get(svc3); // will return 3
 
 // creating token for service to be registered later
 // token name is optional, but might be helpful for debug purposes
 const token1 = createToken('one');
 
 // get instance of specific service using declaration as token
-rootContainer.register(token1, svc1); // will return 3
-rootContainer.get(token1); // will return 1 by creating new service instance using declaration svc1
+rootInjector.register(token1, svc1); // will return 3
+rootInjector.get(token1); // will return 1 by creating new service instance using declaration svc1
 
 // creating child container
-const childContainer = rootContainer.createChild();
-childContainer.get(svc3); // will return 3 by reusing service instance created previously in parent container
+const childInjector = rootInjector.createChild();
+childInjector.get(svc3); // will return 3 by reusing service instance created previously in parent container
 
 // overriding existing implementation
-childContainer.register(svc2, declareServiceRaw(() => 0));
+childInjector.register(svc2, declareServiceRaw(() => 0));
 
 // now when requesting service with overridden dependency, new instance would be created in child container
 // for svc1 dependency instance from parent container would be used
 // for svc2 new instance would be created in child container using new declaration
-childContainer.get(svc3); // will return 1
-rootContainer.get(svc3);  // will still use originally created instance (will return 3)
+childInjector.get(svc3); // will return 1
+rootInjector.get(svc3);  // will still use originally created instance (will return 3)
 
 // dealing with circular dependencies
 const t1 = createToken('t1');
@@ -169,10 +169,10 @@ const s2 = declareServiceRaw(container => {
   };
 }, containerToken(t1));
 
-rootContainer.register(t1, s1);
-rootContainer.register(t2, s2);
+rootInjector.register(t1, s1);
+rootInjector.register(t2, s2);
 
-const s1instance = rootContainer.get(t1);
+const s1instance = rootInjector.get(t1);
 ```
 
 ## Example use case for child container

@@ -1,21 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-non-null-assertion */
 import tokenName from './tokenName';
-import { Declaration } from './Declaration';
+import { ServiceDeclaration } from './ServiceDeclaration';
 import { Injectable } from './Injectable';
-import { ContainerToken } from './ContainerToken';
+import { InjectorToken } from './InjectorToken';
 
-export interface ContainerInterface {
+export interface InjectorInterface {
   /**
    * Register service, can replace existing override one from parent container
    */
-  register<T, R extends T>(declaration: Declaration<R>): void;
+  register<T, R extends T>(declaration: ServiceDeclaration<R>): void;
 
   /**
    * Register service declaration for given token
    */
   register<T, R extends T>(
     token: Injectable<T>,
-    declaration: Declaration<R>
+    declaration: ServiceDeclaration<R>
   ): void;
 
   /**
@@ -26,39 +26,42 @@ export interface ContainerInterface {
   /**
    * Create child container using this as a parent
    */
-  createChild(): ContainerInterface;
+  createChild(): InjectorInterface;
 }
 
-export class Container implements ContainerInterface {
-  private readonly parent?: Container;
-  private readonly providers = new Map<Injectable<any>, Declaration<any>>();
+export class Injector implements InjectorInterface {
+  private readonly parent?: Injector;
+  private readonly providers = new Map<
+    Injectable<any>,
+    ServiceDeclaration<any>
+  >();
   private readonly cache = new Map<Injectable<any>, any>();
-  constructor(parent?: Container) {
+  constructor(parent?: Injector) {
     this.parent = parent;
   }
 
-  register<T>(declaration: Declaration<T>): void;
+  register<T>(declaration: ServiceDeclaration<T>): void;
   // eslint-disable-next-line no-dupe-class-members
   register<T, R extends T>(
     token: Injectable<T>,
-    declaration: Declaration<R>
+    declaration: ServiceDeclaration<R>
   ): void;
   // eslint-disable-next-line no-dupe-class-members
   register<T, R extends T>(
     token: Injectable<T>,
-    declaration?: Declaration<R>
+    declaration?: ServiceDeclaration<R>
   ): void {
     if (declaration) {
       this.providers.set(token, declaration);
     } else {
-      this.providers.set(token, token as Declaration<T>);
+      this.providers.set(token, token as ServiceDeclaration<T>);
     }
   }
 
   /**
    * Resolve service declaration
    */
-  private resolve<T>(token: Injectable<T>): Declaration<T> | undefined {
+  private resolve<T>(token: Injectable<T>): ServiceDeclaration<T> | undefined {
     return (
       this.providers.get(token) || (this.parent && this.parent.resolve(token))
     );
@@ -70,7 +73,7 @@ export class Container implements ContainerInterface {
   private deps(
     token: Injectable<any>,
     chain: Array<Injectable<any>>,
-    startContainer: Container = this,
+    startContainer: Injector = this,
     excludes: Set<Injectable<any>> = new Set()
   ): Injectable<any>[] {
     if (token === chain[0]) {
@@ -86,7 +89,7 @@ export class Container implements ContainerInterface {
     if (declaration) {
       directDeps = declaration!.deps;
     } else {
-      if (token instanceof Declaration) {
+      if (token instanceof ServiceDeclaration) {
         this.ensureRegistered(token);
         directDeps = token.deps;
       }
@@ -113,7 +116,7 @@ export class Container implements ContainerInterface {
     if (directDeps) {
       return computeDeps(directDeps, excludes, chain.concat(token));
     } else {
-      if (token instanceof ContainerToken) {
+      if (token instanceof InjectorToken) {
         return computeDeps(
           token.deps,
           new Set<Injectable<any>>([chain[chain.length - 1], ...excludes]),
@@ -129,7 +132,7 @@ export class Container implements ContainerInterface {
   }
 
   get<T>(token: Injectable<T>): T {
-    if (token instanceof ContainerToken) {
+    if (token instanceof InjectorToken) {
       return this as unknown as T;
     }
 
@@ -164,7 +167,7 @@ export class Container implements ContainerInterface {
       const containerIndices = [];
       for (let i = 0, l = args.length; i < l; i += 1) {
         const arg = args[i];
-        if (arg instanceof Container) {
+        if (arg instanceof Injector) {
           containerIndices.push(i);
           arg.get = () => {
             throw new Error(
@@ -196,8 +199,8 @@ export class Container implements ContainerInterface {
    * @param token
    */
   private ensureRegistered(token: Injectable<any>) {
-    if (token instanceof Declaration) {
-      let container: Container = this;
+    if (token instanceof ServiceDeclaration) {
+      let container: Injector = this;
       let isRegistered = container.providers.has(token);
       // try to find container which have provider for specified declaration
       while (container.parent && !isRegistered) {
@@ -211,7 +214,7 @@ export class Container implements ContainerInterface {
     }
   }
 
-  createChild(): ContainerInterface {
-    return new Container(this);
+  createChild(): InjectorInterface {
+    return new Injector(this);
   }
 }

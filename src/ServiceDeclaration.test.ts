@@ -1,5 +1,5 @@
 import { createToken } from './Token';
-import { declareService, declareServiceRaw } from './Declaration';
+import { declareService, declareServiceRaw } from './ServiceDeclaration';
 
 test('declareService', () => {
   const o = declareService({}, () => ({ a: 1 }));

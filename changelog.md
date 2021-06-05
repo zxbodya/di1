@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0 (2020-01-27)
+**Breaking changes**
+
+- redesign API once again - `Container` is overused and so renaming it back to `Injector`
+
 ## 0.4.3 (2020-07-16)
 - additional type exports
 - readme updates

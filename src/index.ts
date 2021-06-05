@@ -1,29 +1,29 @@
-import { Container, ContainerInterface } from './Container';
+import { Injector, InjectorInterface } from './Injector';
 import { createToken, Token } from './Token';
-import { containerToken } from './ContainerToken';
+import { injectorToken } from './InjectorToken';
 import {
   declareServiceRaw,
   declareService,
-  Declaration,
+  ServiceDeclaration,
   UnwrapDependencies,
   DependenciesObject,
   FactoryWithDependenciesObject,
   FactoryWithDependenciesDepsArray,
   DependenciesArray,
-} from './Declaration';
+} from './ServiceDeclaration';
 export {
-  Container,
+  Injector,
   createToken,
   declareService,
   declareServiceRaw,
-  containerToken,
+  injectorToken,
 };
 
 import type { Injectable, UnwrapInjectable } from './Injectable';
 export type {
-  ContainerInterface,
+  InjectorInterface,
   Token,
-  Declaration,
+  ServiceDeclaration,
   Injectable,
   UnwrapInjectable,
   DependenciesObject,

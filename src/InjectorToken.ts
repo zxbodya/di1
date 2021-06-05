@@ -1,9 +1,9 @@
 import { Injectable } from './Injectable';
 import { Token } from './Token';
-import { ContainerInterface } from './Container';
+import { InjectorInterface } from './Injector';
 import tokenName from './tokenName';
 
-export class ContainerToken extends Token<ContainerInterface> {
+export class InjectorToken extends Token<InjectorInterface> {
   public readonly deps: Injectable<any>[];
   constructor(tokens: Injectable<any>[]) {
     super(`Container(${tokens.map((t) => tokenName(t)).join(',')})`);
@@ -17,8 +17,8 @@ export class ContainerToken extends Token<ContainerInterface> {
  * optionally has a list of dependencies which should be available for the container,
  * this affects in which specific container in the hierarchy service using it is to be created.
  */
-export function containerToken(
+export function injectorToken(
   ...tokens: Injectable<any>[]
-): Token<ContainerInterface> {
-  return new ContainerToken(tokens);
+): Token<InjectorInterface> {
+  return new InjectorToken(tokens);
 }
